@@ -1,0 +1,3 @@
+[submodule "pymdp"]
+	path = pymdp
+	url = https://github.com/hridaik/pymdp.git
