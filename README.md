@@ -45,3 +45,5 @@ pip install -r requirements.txt
 ```
 
 You are now ready to run the project\! ✅
+
+Check out *threat_hierarchical_discrete.ipynb* for main content
