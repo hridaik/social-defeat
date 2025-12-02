@@ -1035,3 +1035,16 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
 
     return history
 
+if __name__ == "__main__":
+    print("Running Simulation in Standalone Mode")
+    
+    GIF_PATH = "test_run.gif"
+    LOG_PATH = "test_run.pkl"
+    
+    history = run_sim(
+        gif_path=GIF_PATH,
+        pkl_path=LOG_PATH,
+        max_steps=100
+    )
+    
+    print(f"Test simulation complete, saved to {GIF_PATH} and {LOG_PATH}")
