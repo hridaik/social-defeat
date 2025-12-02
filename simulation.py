@@ -916,6 +916,7 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
                                 'T': U_T,
                                 'D': U_D},
                         'M_act_habits_single': E_single,
+                        'threat_loc': arena.state_idx_to_rc(rightcol_states[0])
                         }, 
             'agent_loc': [], 
                                 'M_beliefs': [], 'M_util': [],  'M_info_gain': [], 'M_q_pi': [], 'M_neg_efe': [], 'M_action': [], 
