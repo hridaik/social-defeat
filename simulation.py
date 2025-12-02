@@ -958,6 +958,8 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
             T_action = int(T_agent.sample_action()[0])
             history['T_act_t'].append('t')
             history['T_action'].append(T_action)
+            history['T_neg_efe'].append(T_G)
+            history['T_q_pi'].append(T_qpi)
             updated_scale = T_control_scales[T_action]
             # Take action => 0 = reset C(M) to default, 1 = set C(M) to approach
             if updated_scale != current_scale:
@@ -972,6 +974,8 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
             D_action = int(D_agent.sample_action()[0])
             history['D_act_t'].append('t')
             history['D_action'].append(D_action)
+            history['D_neg_efe'].append(D_G)
+            history['D_q_pi'].append(D_qpi)
             updated_scale = D_control_scales[D_action]
             # Take action => 0 = reset C(M) to default, 1 = set C(M) to run        
             if updated_scale != current_scale:
@@ -996,6 +1000,7 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
         T_agent.reset(init_qs=T_decayed_qs)
 
         D_decayed_qs = np.array([decay_qs(D_qs[0], D_forgetting_rate)], dtype=object)
+        D_agent.reset(init_qs=D_decayed_qs)
 
         frame_img = render_grid_frame_arena(world.agent_pos, world.threat_pos, world.shelter_pos, visited, t,
                                     threat_posterior=M_qs[1],
@@ -1013,12 +1018,9 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
         history['M_action'].append(actions[int(M_action)])
         
         history['T_beliefs'].append(T_qs)
-        history['T_neg_efe'].append(T_G)
-        history['T_q_pi'].append(T_qpi)
 
         history['D_beliefs'].append(D_qs)
-        history['D_neg_efe'].append(D_G)
-        history['D_q_pi'].append(D_qpi)
+
 
         # history['util'].append(M_utils)
         # history['info_gain'].append(M_igs)
@@ -1032,3 +1034,4 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
         pickle.dump(history, f)
 
     return history
+
