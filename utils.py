@@ -72,10 +72,10 @@ class grid:
             self._state_to_rc[i] = (r, c)
 
 
-    def idx_to_rc(self, idx: int) -> tuple:
+    def state_idx_to_rc(self, idx: int) -> tuple:
         return self._state_to_rc[int(idx)]
 
-    def rc_to_idx(self, r: int, c: int) -> int:
+    def rc_to_state_idx(self, r: int, c: int) -> int:
         return int(self._rc_to_state[r, c])
 
     def is_valid(self, r: int, c: int) -> bool:

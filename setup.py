@@ -3,7 +3,7 @@ import numpy as np
 from pymdp.agent import Agent
 from itertools import product
 
-def setup(M_policy_precision = 4.0):
+def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [-0.1, -0.1, -0.2, -0.25], shelter_grad = [-0.1, 0.1, 0.15, 0.2, 0.3], delta_stay = 0.15, epistemic_drive = 1.0, T_action = (-0.3, -0.3), D_action = (0.5, 0.7)):
     # "T" maze with the perpendicular arm on the right
     rows = 4
     left_cols = 0
@@ -187,12 +187,12 @@ def setup(M_policy_precision = 4.0):
 
     # create preferences (C matrix)
     # threat_obs outcomes: [none, far, near, at] -> negative increases with closeness
-    U_threat = np.array([-0.10, -0.10, -0.2, -0.2])  # more negative -> avoid
-    U_threat *= 0.8
+    U_threat = np.array(threat_grad)  # more negative -> avoid
+    U_threat *= k_threat
     C_threat = np.log(softmax(U_threat))
     # shelter
-    U_shelter = np.array([-0.1, 0.1, 0.15, 0.20, 0.3]) # positive for being in shelter
-    U_shelter *= 0.5
+    U_shelter = np.array(shelter_grad) # positive for being in shelter
+    U_shelter *= k_shelter
     C_shelter = np.log(softmax(U_shelter))
     # agent self-location: no utility, keep zeros
     U_agent = np.zeros(n_agent_obs)
@@ -248,7 +248,7 @@ def setup(M_policy_precision = 4.0):
     print("policy[0] shape:", policies[0].shape)
 
     # habit over stay (action 4)
-    E_single = np.array([0.15, 0.15, 0.15, 0.15, 0.15])
+    E_single = np.array([0.15, 0.15, 0.15, 0.15, (0.15 + delta_stay)])
 
     policies = list(product(range(n_actions), repeat=policy_len))
     E_policy = np.array([np.prod([E_single[a] for a in p]) for p in policies])
@@ -256,8 +256,6 @@ def setup(M_policy_precision = 4.0):
 
     # Create the low-level pymdp Agent (movement controller)
     # control facets: [n_actions, 1, 1]
-
-    epistemic_drive = 1.0
 
     M_agent = Agent(
         A = A,
@@ -309,7 +307,7 @@ def setup(M_policy_precision = 4.0):
     # control 0 = no-scale, control 1 = apply-scale (aims to push system toward safe)
     D_control_scales = {
         0: (1.0, 1.0),   # no scaling (threat_scale, shelter_scale)
-        1: (5.0, 5.0),   # danger scaling: stronger negative utility for threat (but we model causal effect below)
+        1: D_action,   # danger scaling: stronger negative utility for threat (but we model causal effect below)
     }
     n_controls_D = len(D_control_scales)
 
@@ -441,7 +439,7 @@ def setup(M_policy_precision = 4.0):
     # control 0 = no-scale, control 1 = apply-scale (approach/investigate)
     T_control_scales = {
         0: (1.0, 1.0),   # no scaling (threat_scale, shelter_scale)
-        1: (-5.0, -5.0),   # danger scaling: stronger negative utility for threat (but we model causal effect below)
+        1: T_action,   # approach scaling
     }
     n_controls_T = len(T_control_scales)
 

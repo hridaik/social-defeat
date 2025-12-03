@@ -4,9 +4,14 @@ from setup import setup
 import imageio
 import pickle
 
-def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id_threshold=0.8, T_ticks=4, D_ticks=16):
+def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_steps=1000, id_threshold=0.8, \
+            T_ticks=4, D_ticks=16, k_shelter=0.6, k_threat=0.8, threat_grad=[-0.1, -0.1, -0.2, -0.25], shelter_grad=[-0.1, 0.1, 0.15, 0.2, 0.3], \
+            delta_stay=0.15, epistemic_drive=1.0, T_scale=(-0.3, -0.3), D_scale=(0.5, 0.7)):
     
-    arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states = setup()
+    arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states = setup(k_shelter=k_shelter, k_threat=k_threat, \
+                                                                                                                                                                                                   threat_grad=threat_grad, shelter_grad=shelter_grad, \
+                                                                                                                                                                                                    delta_stay=delta_stay, epistemic_drive=epistemic_drive, \
+                                                                                                                                                                                                    T_action=T_scale, D_action=D_scale)
     
     world = world_env(arena=arena, true_agent_pos=(1, 0), true_threat_pos=rightcol_states[0], true_shelter_pos=np.array(leftcol_states, dtype=int))
 
@@ -34,24 +39,26 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
 
     base_scale = D_control_scales[0]
     current_scale = base_scale
-    scale_name = 'SAFE'
-
+    D_scale_name = 'SAFE'
+    T_scale_name = 'DEFAULT'
+    
     history = {'init': {'forgetting_rates': {'M_fr' : M_forgetting_rate, 'T_fr': T_forgetting_rate, 'D_fr': D_forgetting_rate}, 
-                        'ticks': {'T_ticks': T_ticks, 'D_ticks': D_ticks},
-                        'base_scale': base_scale,
-                        'T_act_1': T_control_scales[1],
-                        'D_act_1': D_control_scales[1],
-                        'detection_threshold': danger_detection_threshold,
-                        'utils': {'M': {'agent': U_agent_base, 'shelter': U_shelter_base, 'threat': U_threat_base},
-                                'T': U_T,
-                                'D': U_D},
-                        'M_act_habits_single': E_single,
-                        'threat_loc': arena.state_idx_to_rc(rightcol_states[0])
-                        }, 
-            'agent_loc': [], 
-                                'M_beliefs': [], 'M_util': [],  'M_info_gain': [], 'M_q_pi': [], 'M_neg_efe': [], 'M_action': [], 
-                                'T_beliefs': [], 'T_util': [], 'T_info_gain': [], 'T_q_pi': [], 'T_neg_efe': [], 'T_act_t': [], 'T_action': [],
-                                'D_beliefs': [], 'D_util': [], 'D_info_gain': [], 'D_q_pi': [], 'D_neg_efe': [], 'D_act_t': [], 'D_action': [],}
+                    'ticks': {'T_ticks': T_ticks, 'D_ticks': D_ticks},
+                    'base_scale': base_scale,
+                    'T_act_1': T_control_scales[1],
+                    'D_act_1': D_control_scales[1],
+                    'detection_threshold': danger_detection_threshold,
+                    'utils': {'M': {'agent': U_agent_base, 'shelter': U_shelter_base, 'threat': U_threat_base},
+                              'T': U_T,
+                              'D': U_D},
+                    'M_act_habits_single': E_single,
+                    'threat_loc': rightcol_states[0],
+                    'shelter_loc': np.array(leftcol_states),
+                    }, 
+           'agent_loc': [], 
+                            'M_beliefs': [], 'M_util': [],  'M_info_gain': [], 'M_q_pi': [], 'M_neg_efe': [], 'M_action': [], 
+                            'T_beliefs': [], 'T_util': [], 'T_info_gain': [], 'T_q_pi': [], 'T_neg_efe': [], 'T_act_t': [], 'T_action': [],
+                            'D_beliefs': [], 'D_util': [], 'D_info_gain': [], 'D_q_pi': [], 'D_neg_efe': [], 'D_act_t': [], 'D_action': [],}
     # T_history = {}
     # D_history = {}
 
@@ -94,7 +101,8 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
             updated_scale = T_control_scales[T_action]
             # Take action => 0 = reset C(M) to default, 1 = set C(M) to approach
             if updated_scale != current_scale:
-                print(f't = {t} | T changed scale to {updated_scale}')
+                T_scale_name = 'DEFAULT' if (updated_scale == base_scale) else 'APPROACH'
+                print(f't = {t} | T changed behavior to {T_scale_name}')
                 M_agent.C = build_scaled_C(updated_scale)
                 current_scale = updated_scale
 
@@ -109,11 +117,17 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
             history['D_q_pi'].append(D_qpi)
             updated_scale = D_control_scales[D_action]
             # Take action => 0 = reset C(M) to default, 1 = set C(M) to run        
-            if updated_scale != current_scale:
-                scale_name = 'SAFE' if (updated_scale == base_scale) else 'DANGER'
-                print(f't = {t} | D changed scale to {updated_scale}')
-                M_agent.C = build_scaled_C(updated_scale)
-                current_scale = updated_scale
+            if updated_scale != current_scale: # T & D don't both say default/base scale
+                D_scale_name = 'SAFE' if (updated_scale == base_scale) else 'DANGER'
+                if D_scale_name == 'DANGER':
+                    # run
+                    print(f't = {t} | D changed context to {D_scale_name}')
+                    M_agent.C = build_scaled_C(updated_scale)
+                    current_scale = updated_scale
+                else:
+                    # T says approach, D thinks safe => approach
+                    print(f't = {t} | D set context to {D_scale_name}')
+                    # don't update current scale
             
             if D_ticker == 0:
                 D_ticker += D_ticks + 1
@@ -133,14 +147,15 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
         D_decayed_qs = np.array([decay_qs(D_qs[0], D_forgetting_rate)], dtype=object)
         D_agent.reset(init_qs=D_decayed_qs)
 
-        frame_img = render_grid_frame_arena(world.agent_pos, world.threat_pos, world.shelter_pos, visited, t,
+        if gif_path is not None:
+            frame_img = render_grid_frame_arena(world.agent_pos, world.threat_pos, world.shelter_pos, visited, t,
                                     threat_posterior=M_qs[1],
-                                    high_level_mode=scale_name,
-                                    cell_size=48)
+                                    high_level_mode=D_scale_name,
+                                    cell_size=48, arena=arena)
         
-        frames.append(frame_img)
+            frames.append(frame_img)
 
-        history['agent_loc'].append(arena.state_idx_to_rc(current_state))
+        history['agent_loc'].append(current_state)
         
         history['M_beliefs'].append(M_qs)
         history['M_neg_efe'].append(M_G)
@@ -158,11 +173,13 @@ def run_sim(gif_path, pkl_path, M_fr=0.0, D_fr=0.0, T_fr=0.0, max_steps=1000, id
 
     print('Simulation finished')
 
-    imageio.mimsave(gif_path, frames, fps=10)
-    print(f"Saved {gif_path}")
+    if gif_path is not None:
+        imageio.mimsave(gif_path, frames, fps=10)
+        print(f"Saved {gif_path}")
 
-    with open(pkl_path, 'wb') as f:
-        pickle.dump(history, f)
+    if pkl_path is not None:
+        with open(pkl_path, 'wb') as f:
+            pickle.dump(history, f)
 
     return history
 
