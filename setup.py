@@ -3,13 +3,13 @@ import numpy as np
 from pymdp.agent import Agent
 from itertools import product
 
-def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [-0.1, -0.1, -0.2, -0.25], shelter_grad = [-0.1, 0.1, 0.15, 0.2, 0.3], delta_stay = 0.15, epistemic_drive = 1.0, T_action = (-0.3, -0.3), D_action = (0.5, 0.7)):
+def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], delta_stay = 0.15, epistemic_drive = 1.0, T_action = (-0.3, -0.3), D_action = (0.5, 0.7)):
     # "T" maze with the perpendicular arm on the right
-    rows = 4
+    rows = 5
     left_cols = 0
-    corridor_cols = 3   # corridor width
-    right_cols = 2
-    corridor_rows = (1,2)  # allow rows 1 and 2 (middle two rows), top(0) and bottom(3) are blocked in corridor
+    corridor_cols = 6   # corridor width
+    right_cols = 9
+    corridor_rows = (1,2,3)  # allow rows 1 and 2 (middle two rows), top(0) and bottom(3) are blocked in corridor
     mask, regions = make_two_rooms_with_corridor(rows=rows, left_cols=left_cols,
                                                 corridor_cols=corridor_cols, right_cols=right_cols,
                                                 corridor_rows=corridor_rows, prefer_total_cols=None)
@@ -25,8 +25,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # SETUP M (Motor) agent
 
     # observation modalities -> threat intensity/dist, shelter, agent location
-    n_threat_obs = 4                         # intensities 0..3 with higher intensity is closer => can make this modular in the future
-    n_shelter_obs = 2 # [NOT AT, AT]
+    n_threat_obs = 10                         # intensities 0..3 with higher intensity is closer => can make this modular in the future
+    n_shelter_obs = 13 # [NOT AT, AT]
     n_agent_obs = n_states
 
     actions = ["up", "down", "left", "right", "stay"]
@@ -91,8 +91,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # Build A state-observation map likelihoods
 
     # observation sizes
-    n_threat_obs = 4
-    n_shelter_obs = 5
+    n_threat_obs = 10
+    n_shelter_obs = 13
     n_agent_obs = n_agent
 
     A_threat = np.zeros((n_threat_obs, n_agent, n_threat, n_shelter))
@@ -113,22 +113,53 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
                     A_threat[0, a, t, s] = 1.0
     A_threat /= A_threat.sum(axis=0, keepdims=True)
 
+    max_t_obs_idx = n_threat_obs - 1
+    A_threat = np.zeros((n_threat_obs, n_agent, n_threat, n_shelter))
+    for a in range(n_agent):
+        for t in range(n_threat):
+            for s in range(n_shelter):
+                d = arena.manhattan_states(a, t)
+
+                if d == 0:
+                    A_threat[max_t_obs_idx, a, t, s] = 1.0
+                    
+                elif d < max_t_obs_idx:
+                    obs_high = max_t_obs_idx - d
+                    obs_low = max_t_obs_idx - d - 1
+                    
+                    A_threat[obs_high, a, t, s] = 0.75
+                    A_threat[obs_low, a, t, s] = 0.25
+                    
+                else:
+                    A_threat[0, a, t, s] = 1.0
+
+    A_threat /= A_threat.sum(axis=0, keepdims=True)
+
     # shelter modality (is agent at shelter index?)
+    max_s_obs_idx = n_shelter_obs - 1
+
     A_shelter = np.zeros((n_shelter_obs, n_agent, n_threat, n_shelter))
+
     for a in range(n_agent):
         for t in range(n_threat):
             for s in range(n_shelter):
                 d = arena.manhattan_states(a, s)
+
                 if d == 0:
-                    A_shelter[4, a, t, s] = 1.0
+                    A_shelter[max_s_obs_idx, a, t, s] = 1.0
+
                 elif d == 1:
-                    A_shelter[3, a, t, s] = 0.8
-                    A_shelter[2, a, t, s] = 0.2
+                    A_shelter[max_s_obs_idx - 1, a, t, s] = 0.8
+                    A_shelter[max_s_obs_idx - 2, a, t, s] = 0.2
+
                 elif d == 2:
-                    A_shelter[2, a, t, s] = 0.95
-                    A_shelter[1, a, t, s] = 0.05
-                elif d == 3:
-                    A_shelter[1, a, t, s] = 1.0
+                    A_shelter[max_s_obs_idx - 2, a, t, s] = 0.95
+                    A_shelter[max_s_obs_idx - 3, a, t, s] = 0.05
+
+                elif d < max_s_obs_idx:
+                    obs_idx = max_s_obs_idx - d
+                    A_shelter[obs_idx, a, t, s] = 1.0
+
                 else:
                     A_shelter[0, a, t, s] = 1.0
     A_shelter /= A_shelter.sum(axis=0, keepdims=True)
@@ -191,7 +222,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     U_threat *= k_threat
     C_threat = np.log(softmax(U_threat))
     # shelter
-    U_shelter = np.array(shelter_grad) # positive for being in shelter
+    positive_gradient = np.linspace(shelter_grad[0], shelter_grad[1], n_shelter_obs - 1)
+    U_shelter = np.concatenate(([-0.1], positive_gradient))
     U_shelter *= k_shelter
     C_shelter = np.log(softmax(U_shelter))
     # agent self-location: no utility, keep zeros
@@ -280,7 +312,7 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # Create D agent (danger/safety context)
 
     n_danger = 2 # Danger states (NO DANGER, DANGER)
-    n_obs_joint = 8 # [0-7] (no threat/threat)*(distance (0-3))
+    n_obs_joint = 2 * n_threat_obs # [0-19] (no threat/threat)*(distance (0-9))
 
     # A observation model (likelihood): P(obs | danger)
     p_correct = 0.99
@@ -339,7 +371,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # utility should not matter in this case????????????
     T_D = 1
     # U_D = np.ones(n_obs_joint) / n_obs_joint
-    U_D = [0, 0, 0, 0, -10, -10, 0, 0] # don't like being in danger
+    U_D = np.zeros(n_obs_joint)
+    for i in range(n_obs_joint // 2, (n_obs_joint // 2) + distance_threshold):
+        U_D[i] = -10
     C_D_vec = np.log(softmax(U_D))
     # shape (n_obs_high, T_high), using T_high=1
     C_D = C_D_vec[:, None].repeat(T_D, axis=1)
@@ -400,9 +434,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # actions - [nothing, approach (scale down C_movement)]
 
     n_identity = 2
-    n_dist = 4
+    n_dist = 10
 
-    n_obs_smell = 4
+    n_obs_smell = 10
 
     # A observation model (likelihood): P(obs | danger)
     A_T = np.zeros((n_obs_smell, n_identity, n_dist), dtype=float)
@@ -435,6 +469,41 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     A_T /= A_T.sum(axis=0, keepdims=True)
 
     A_T_obj = np.empty(1, dtype=object); A_T_obj[0] = A_T
+
+    # # A observation model (likelihood): P(obs | identity, distance)
+# This scales the signal strength from 0.2 (Far/Blurry) to 0.9 (Close/Clear)
+# A_T = np.zeros((n_obs_smell, n_identity, n_dist), dtype=float)
+
+# # DYNAMIC PRECISION: 
+# # We want high confidence at dist 0, low confidence at dist 9.
+# # safe_weight is roughly 1/10 = 0.1
+# # At dist 9: threat_weight ~ 0.15 (barely distinguishable from safe) -> Belief ~55%
+# # At dist 0: threat_weight ~ 0.90 (very distinct) -> Belief ~90%
+
+# for col in range(n_dist):
+#     # Calculate weight based on distance (Linear decay)
+#     # col 0 (Close) -> w ~ 0.9
+#     # col 9 (Far)   -> w ~ 0.15
+# slope = 0.75
+# Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
+# High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
+#     w_main = 0.9 - (slope* (col / (n_dist - 1)))
+    
+#     # Fill Threat Column (Identity 1)
+#     diag_row = (n_obs_smell - 1) - col # Inverse diagonal
+    
+#     # Distribute the weight
+#     noise_rem = 1.0 - w_main
+    
+#     # Fill the column with uniform noise first
+#     A_T[:, 1, col] = noise_rem / (n_obs_smell - 1)
+    
+#     # Set the peak (main diagonal)
+#     A_T[diag_row, 1, col] = w_main
+
+# # Fill Not Threat Column (Identity 0) - Uniform / Flat
+# # A safe object smells 'random' or 'ambiguous' everywhere
+# A_T[:, 0, :] = 1.0 / n_obs_smell
 
     # control 0 = no-scale, control 1 = apply-scale (approach/investigate)
     T_control_scales = {
@@ -480,8 +549,10 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     B_T_obj[1] = B_T_dist
 
     # priors (identity uniform, dist = 3)
-    D_T_identity = np.array([0.5, 0.5], dtype=float)
-    D_T_dist = np.array([0.0, 0.0, 0.0, 1.0], dtype=float)
+    D_T_identity = np.ones(n_identity) / n_identity
+    # D_T_dist = np.array([0.0, 0.0, 0.0, 1.0], dtype=float)
+    D_T_dist = np.zeros(n_dist)
+    D_T_dist[-1] = 1.0
     D_T_obj = np.empty(2, dtype=object)
     D_T_obj[0] = D_T_identity
     D_T_obj[1] = D_T_dist

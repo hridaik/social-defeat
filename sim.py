@@ -5,8 +5,8 @@ import imageio
 import pickle
 
 def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_steps=1000, id_threshold=0.8, \
-            T_ticks=4, D_ticks=16, k_shelter=0.6, k_threat=0.8, threat_grad=[-0.1, -0.1, -0.2, -0.25], shelter_grad=[-0.1, 0.1, 0.15, 0.2, 0.3], \
-            delta_stay=0.15, epistemic_drive=1.0, T_scale=(-0.3, -0.3), D_scale=(0.5, 0.7)):
+            T_ticks=16, D_ticks=48, k_shelter=0.6, k_threat=0.8, threat_grad=[-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], \
+            delta_stay=0.15, epistemic_drive=1.0, T_scale=(-0.3, -0.3), D_scale=(0.5, 0.7), printing=False):
     
     arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states = setup(k_shelter=k_shelter, k_threat=k_threat, \
                                                                                                                                                                                                    threat_grad=threat_grad, shelter_grad=shelter_grad, \
@@ -31,8 +31,8 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
 
     danger_detection_threshold = id_threshold
 
-    T_ticks = 4
-    D_ticks = 16
+    T_ticks = 12
+    D_ticks = 48
 
     T_ticker = T_ticks
     D_ticker = D_ticks
@@ -41,6 +41,7 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
     current_scale = base_scale
     D_scale_name = 'SAFE'
     T_scale_name = 'DEFAULT'
+    D_cooldown = False
     
     history = {'init': {'forgetting_rates': {'M_fr' : M_forgetting_rate, 'T_fr': T_forgetting_rate, 'D_fr': D_forgetting_rate}, 
                     'ticks': {'T_ticks': T_ticks, 'D_ticks': D_ticks},
@@ -80,7 +81,7 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
 
         # Inference for T level
         T_obs = obs[0] # Threat smell
-        T_qs = T_agent.infer_states([obs[0]])
+        T_qs = T_agent.infer_states([T_obs])
 
         mp_A_loc = np.argmax(M_qs[0])
         mp_T_loc = np.argmax(M_qs[1])
@@ -88,27 +89,28 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
         D_id_obs = np.argmax(T_qs[0])
 
         # Inference for D level    
-        D_obs = min(D_dist_obs, 3) + 4*D_id_obs
+        D_obs = min(D_dist_obs, 9) + 10*D_id_obs
         D_qs = D_agent.infer_states([D_obs])
 
         if (T_ticker == 0):
-            T_qpi, T_G = T_agent.infer_policies()
-            T_action = int(T_agent.sample_action()[0])
-            history['T_act_t'].append('t')
-            history['T_action'].append(T_action)
-            history['T_neg_efe'].append(T_G)
-            history['T_q_pi'].append(T_qpi)
-            updated_scale = T_control_scales[T_action]
-            # Take action => 0 = reset C(M) to default, 1 = set C(M) to approach
-            if updated_scale != current_scale:
-                T_scale_name = 'DEFAULT' if (updated_scale == base_scale) else 'APPROACH'
-                print(f't = {t} | T changed behavior to {T_scale_name}')
-                M_agent.C = build_scaled_C(updated_scale)
-                current_scale = updated_scale
-
             T_ticker += T_ticks + 1
+            if not D_cooldown:
+                T_qpi, T_G = T_agent.infer_policies()
+                T_action = int(T_agent.sample_action()[0])
+                history['T_act_t'].append('t')
+                history['T_action'].append(T_action)
+                history['T_neg_efe'].append(T_G)
+                history['T_q_pi'].append(T_qpi)
+                updated_scale = T_control_scales[T_action]
+                # Take action => 0 = reset C(M) to default, 1 = set C(M) to approach
+                if updated_scale != current_scale:
+                    T_scale_name = 'DEFAULT' if (updated_scale == base_scale) else 'APPROACH'
+                    if printing:
+                        print(f't = {t} | T changed behavior to {T_scale_name}')
+                    M_agent.C = build_scaled_C(updated_scale)
+                    current_scale = updated_scale
 
-        if (D_ticker == 0) or (T_qs[0][0] > danger_detection_threshold):
+        if (D_ticker == 0) or ((T_qs[0][1] > danger_detection_threshold) and not D_cooldown):
             D_qpi, D_G = D_agent.infer_policies()
             D_action = int(D_agent.sample_action()[0])
             history['D_act_t'].append('t')
@@ -121,18 +123,22 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
                 D_scale_name = 'SAFE' if (updated_scale == base_scale) else 'DANGER'
                 if D_scale_name == 'DANGER':
                     # run
-                    print(f't = {t} | D changed context to {D_scale_name}')
+                    if printing:
+                        print(f't = {t} | D changed context to {D_scale_name}')
                     M_agent.C = build_scaled_C(updated_scale)
                     current_scale = updated_scale
+                    D_ticker += D_ticks // 2
+                    D_cooldown = True
                 else:
                     # T says approach, D thinks safe => approach
-                    print(f't = {t} | D set context to {D_scale_name}')
+                    if printing:
+                        print(f't = {t} | D set context to {D_scale_name}')
                     # don't update current scale
             
-            if D_ticker == 0:
+            if (D_ticker == 0):
                 D_ticker += D_ticks + 1
-            else:
-                D_ticker += D_ticks // 2
+                if D_cooldown:
+                    D_cooldown = False
 
         T_ticker -= 1
         D_ticker -= 1
