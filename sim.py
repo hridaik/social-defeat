@@ -31,8 +31,8 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
 
     danger_detection_threshold = id_threshold
 
-    T_ticks = 12
-    D_ticks = 48
+    # T_ticks = 12
+    # D_ticks = 48
 
     T_ticker = T_ticks
     D_ticker = D_ticks
