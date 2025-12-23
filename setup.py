@@ -95,41 +95,32 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     n_shelter_obs = 13
     n_agent_obs = n_agent
 
-    A_threat = np.zeros((n_threat_obs, n_agent, n_threat, n_shelter))
-    for a in range(n_agent):
-        for t in range(n_threat):
-            for s in range(n_shelter):
-                d = arena.manhattan_states(a, t)
-                if d == 0:
-                    A_threat[3, a, t, s] = 1.0
-                    # A_threat[2, a, t, s] = 0.25
-                elif d == 1:
-                    A_threat[2, a, t, s] = 0.75
-                    A_threat[1, a, t, s] = 0.25
-                elif d == 2:
-                    A_threat[1, a, t, s] = 0.75
-                    A_threat[0, a, t, s] = 0.25
-                else:
-                    A_threat[0, a, t, s] = 1.0
-    A_threat /= A_threat.sum(axis=0, keepdims=True)
-
     max_t_obs_idx = n_threat_obs - 1
     A_threat = np.zeros((n_threat_obs, n_agent, n_threat, n_shelter))
-    for a in range(n_agent):
-        for t in range(n_threat):
-            for s in range(n_shelter):
-                d = arena.manhattan_states(a, t)
 
+    for a in range(n_agent):
+        r_a, c_a = arena.state_idx_to_rc(a)
+        for t in range(n_threat):
+            r_t, c_t = arena.state_idx_to_rc(t)
+            cluster_offsets = [(0,0), (0,-1), (-1,0), (-1,-1)] # threat's cage is a 4 cell cluster
+            
+            d_min = 1000
+            for dr, dc in cluster_offsets:
+                r_cell = r_t + dr
+                c_cell = c_t + dc
+                dist = abs(r_a - r_cell) + abs(c_a - c_cell)
+                if dist < d_min:
+                    d_min = dist
+            d = d_min
+
+            for s in range(n_shelter):
                 if d == 0:
                     A_threat[max_t_obs_idx, a, t, s] = 1.0
-                    
                 elif d < max_t_obs_idx:
                     obs_high = max_t_obs_idx - d
                     obs_low = max_t_obs_idx - d - 1
-                    
                     A_threat[obs_high, a, t, s] = 0.75
                     A_threat[obs_low, a, t, s] = 0.25
-                    
                 else:
                     A_threat[0, a, t, s] = 1.0
 

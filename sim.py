@@ -85,7 +85,22 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
 
         mp_A_loc = np.argmax(M_qs[0])
         mp_T_loc = np.argmax(M_qs[1])
-        D_dist_obs = arena.manhattan_states(mp_T_loc, mp_A_loc)
+        mp_A_rc = arena.state_idx_to_rc(np.argmax(M_qs[0]))
+        mp_T_rc = arena.state_idx_to_rc(np.argmax(M_qs[1]))
+        threat_cluster = [ # threat's cage
+        (mp_T_rc[0], mp_T_rc[1]),     # Bottom-Right (true belief == one cell)
+        (mp_T_rc[0], mp_T_rc[1]-1),   # Bottom-Left (all other cells)
+        (mp_T_rc[0]-1, mp_T_rc[1]),   # Top-Right
+        (mp_T_rc[0]-1, mp_T_rc[1]-1)  # Top-Left
+        ]
+        d_to_cage = 1000
+        for t_cell in threat_cluster:
+            # Check bounds just in case inferred location is at edge
+            if 0 <= t_cell[0] < arena.rows and 0 <= t_cell[1] < arena.cols: 
+                d = abs(mp_A_rc[0] - t_cell[0]) + abs(mp_A_rc[1] - t_cell[1])
+                if d < d_to_cage:
+                    d_to_cage = d
+        D_dist_obs = d_to_cage
         D_id_obs = np.argmax(T_qs[0])
 
         # Inference for D level    
@@ -154,7 +169,8 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
         D_agent.reset(init_qs=D_decayed_qs)
 
         if gif_path is not None:
-            frame_img = render_grid_frame_arena(world.agent_pos, world.threat_pos, world.shelter_pos, visited, t,
+            frame_img = render_grid_frame_arena(world.agent_pos, world.shelter_pos, visited, t,
+                                    threat_state_list=1, # just not none
                                     threat_posterior=M_qs[1],
                                     high_level_mode=D_scale_name,
                                     cell_size=48, arena=arena)

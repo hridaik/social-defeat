@@ -130,6 +130,7 @@ class world_env():
         self.starting_pos = arena.rc_to_state_idx(true_agent_pos[0], true_agent_pos[1])
         self.agent_pos = self.starting_pos
         self.threat_pos = true_threat_pos
+        self.threat_pos_list = [arena.rc_to_state_idx(pos[0], pos[1]) for pos in [(3, 13), (3, 14), (4, 13), (4, 14)]]
         self.shelter_pos = true_shelter_pos
         print(f'Initialized - Agent postion: {arena.state_idx_to_rc(self.starting_pos)}, Threat position: {arena.state_idx_to_rc(self.threat_pos)}')
         print()
@@ -139,7 +140,7 @@ class world_env():
         self.agent_pos = new_state_idx
         agent_obs = self.agent_pos
 
-        d_a_t = self.arena.manhattan_states(self.agent_pos, self.threat_pos)
+        d_a_t = min([self.arena.manhattan_states(self.agent_pos, t_pos) for t_pos in self.threat_pos_list])
         threat_obs = max(10 - d_a_t, 0)
 
         d_a_s = 1000 # np.inf
@@ -158,10 +159,10 @@ class world_env():
 
 
 # helper - visualization renderer
-def render_grid_frame_arena(agent_state, threat_state, shelter_state, visited_states, step,
-                            threat_posterior=None, cell_size=48,
-                            high_level_mode=None, current_scale=None, D_posterior=None,
-                            D_step=None, arena=None):
+def render_grid_frame_arena(agent_state, shelter_state, visited_states, step,
+                            threat_state=None, threat_posterior=None, cell_size=48,
+                            threat_state_list=None, high_level_mode=None, current_scale=None, 
+                            D_posterior=None, D_step=None, arena=None):
     """
     Draw arena with a colored status strip above it.
     The strip background color is GREEN when mode is safe, RED when danger.
@@ -229,6 +230,12 @@ def render_grid_frame_arena(agent_state, threat_state, shelter_state, visited_st
             draw.text((c*cell_size+cell_size//3, r*cell_size+cell_size//4), "T", fill=(0,0,0))
         except Exception:
             pass
+
+    if threat_state_list is not None:
+        threat_pos = [(3, 13), (3, 14), (4, 13), (4, 14)] # hardcoded for now, icba
+        for (r, c) in threat_pos:
+            draw.rectangle([c*cell_size, r*cell_size, (c+1)*cell_size-1, (r+1)*cell_size-1],
+                        fill=(255,150,150), outline=(0,0,0), width=2)
 
     # agent
     if agent_state is not None:
