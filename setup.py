@@ -307,7 +307,7 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
 
     # A observation model (likelihood): P(obs | danger)
     p_correct = 0.99
-    distance_threshold = 2
+    distance_threshold = 3
 
     A_D = np.zeros((n_obs_joint, n_danger), dtype=float)
 
@@ -476,8 +476,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
 #     # col 0 (Close) -> w ~ 0.9
 #     # col 9 (Far)   -> w ~ 0.15
 # slope = 0.75
-# Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
-# High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
+# # Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
+# # High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
 #     w_main = 0.9 - (slope* (col / (n_dist - 1)))
     
 #     # Fill Threat Column (Identity 1)

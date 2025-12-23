@@ -136,7 +136,12 @@ class world_env():
         print()
 
     def step(self, action):
-        new_state_idx = self.arena.step_from_state(self.agent_pos, action)
+        intended_state_idx = self.arena.step_from_state(self.agent_pos, action)
+        if intended_state_idx in self.threat_pos_list: # hitting cage
+            new_state_idx = self.agent_pos
+        else:
+            new_state_idx = intended_state_idx
+        self.agent_pos = new_state_idx
         self.agent_pos = new_state_idx
         agent_obs = self.agent_pos
 
