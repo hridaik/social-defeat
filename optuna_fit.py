@@ -6,6 +6,8 @@ import tqdm
 import itertools
 import os
 import optuna
+import sys
+import datetime
 
 final_mask = np.array([
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
@@ -198,10 +200,13 @@ def objective(trial, target_avg, target_std):
 
     for step in range(n_sims):
         # --- Run Simulation ---
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: STARTING...", flush=True)
         history = run_sim(id_threshold=id_threshold, 
                           sensory_imprecision=sensory_prec_slope, 
                           k_shelter=k_shelter, 
-                          k_threat=k_threat)
+                          k_threat=k_threat,
+                          max_steps=2000)
         
         # Create DataFrame
         trajectory = pd.DataFrame({
@@ -224,16 +229,14 @@ def objective(trial, target_avg, target_std):
 
         # Calculate Loss based on the running mean
         for k in weights:
-            # BUG FIX: Ensure key matches (t_investigating vs t_investigation)
             # Use .get() or ensure calculate_metrics returns exact keys
-            metric_val = running_means.get(k) 
-            if metric_val is None:
-                # Handle the typo: map 't_investigating' to 't_investigation' if needed
-                metric_val = running_means.get('t_investigation') 
-            
+            metric_val = running_means.get(k)             
             diff = metric_val - target_avg[k]
             std = target_std[k] + 1e-6
             current_loss += weights[k] * ((diff / std) ** 2)
+        
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: FINISHED. Current Loss: {current_loss:.4f}", flush=True)
 
         # --- PRUNING STEP ---
         # We report the loss to Optuna. 
