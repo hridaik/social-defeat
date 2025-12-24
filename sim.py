@@ -4,14 +4,14 @@ from setup import setup
 import imageio
 import pickle
 
-def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_steps=1000, id_threshold=0.8, \
+def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.2, T_fr=0.2, max_steps=2000, id_threshold=0.8, \
             T_ticks=16, D_ticks=48, k_shelter=0.6, k_threat=0.8, threat_grad=[-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], \
-            delta_stay=0.15, epistemic_drive=1.0, T_scale=(-0.3, -0.3), D_scale=(0.5, 0.7), printing=False):
+            delta_stay=0.15, epistemic_drive=1.0, T_scale=(-3.0, -3.0), D_scale=(5.0, 20.0), sensory_imprecision=0.75, printing=False):
     
     arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states = setup(k_shelter=k_shelter, k_threat=k_threat, \
                                                                                                                                                                                                    threat_grad=threat_grad, shelter_grad=shelter_grad, \
                                                                                                                                                                                                     delta_stay=delta_stay, epistemic_drive=epistemic_drive, \
-                                                                                                                                                                                                    T_action=T_scale, D_action=D_scale)
+                                                                                                                                                                                                    T_action=T_scale, D_action=D_scale, sensory_imprecision=sensory_imprecision)
     
     world = world_env(arena=arena, true_agent_pos=(1, 0), true_threat_pos=rightcol_states[0], true_shelter_pos=np.array(leftcol_states, dtype=int))
 
@@ -49,6 +49,7 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
                     'T_act_1': T_control_scales[1],
                     'D_act_1': D_control_scales[1],
                     'detection_threshold': danger_detection_threshold,
+                    'sensory_prec_slope': sensory_imprecision,
                     'utils': {'M': {'agent': U_agent_base, 'shelter': U_shelter_base, 'threat': U_threat_base},
                               'T': U_T,
                               'D': U_D},
@@ -205,16 +206,19 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.1, T_fr=0.2, max_step
 
     return history
 
+
+import time
 if __name__ == "__main__":
     print("Running Simulation in Standalone Mode")
     
     GIF_PATH = "test_run.gif"
     LOG_PATH = "test_run.pkl"
     
+    start_time = time.time()
     history = run_sim(
         gif_path=GIF_PATH,
         pkl_path=LOG_PATH,
-        max_steps=100
+        max_steps=100,
+        printing=True
     )
-    
-    print(f"Test simulation complete, saved to {GIF_PATH} and {LOG_PATH}")
+    print(f"Test simulation complete, time taken: {time.time() - start_time}s saved to {GIF_PATH} and {LOG_PATH}")

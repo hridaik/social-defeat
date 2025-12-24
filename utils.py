@@ -146,14 +146,14 @@ class world_env():
         agent_obs = self.agent_pos
 
         d_a_t = min([self.arena.manhattan_states(self.agent_pos, t_pos) for t_pos in self.threat_pos_list])
-        threat_obs = max(10 - d_a_t, 0)
+        threat_obs = max(9 - d_a_t, 0)
 
         d_a_s = 1000 # np.inf
         for s_pos in self.shelter_pos:
             d_a_si = self.arena.manhattan_states(self.agent_pos, s_pos)
             if (d_a_si < d_a_s):
                 d_a_s = d_a_si
-        shelter_obs = max(13 - d_a_s, 0)
+        shelter_obs = max(12 - d_a_s, 0)
 
         return agent_obs, threat_obs, shelter_obs
     

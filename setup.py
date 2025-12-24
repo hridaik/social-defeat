@@ -3,7 +3,7 @@ import numpy as np
 from pymdp.agent import Agent
 from itertools import product
 
-def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], delta_stay = 0.15, epistemic_drive = 1.0, T_action = (-0.3, -0.3), D_action = (0.5, 0.7)):
+def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], delta_stay = 0.15, epistemic_drive = 1.0, T_action = (-0.3, -0.3), D_action = (0.5, 0.7), printing=False, sensory_imprecision = 0.75):
     # "T" maze with the perpendicular arm on the right
     rows = 5
     left_cols = 0
@@ -13,9 +13,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     mask, regions = make_two_rooms_with_corridor(rows=rows, left_cols=left_cols,
                                                 corridor_cols=corridor_cols, right_cols=right_cols,
                                                 corridor_rows=corridor_rows, prefer_total_cols=None)
-
-    print("Arena mask shape:", mask.shape)
-    print("Passable cells count:", mask.sum())
+    if printing:
+        print("Arena mask shape:", mask.shape)
+        print("Passable cells count:", mask.sum())
 
     # setup arena env
     arena = grid(mask=mask)
@@ -84,8 +84,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     B[1] = B_threat
     B[2] = B_shelter
 
-    print("Built B with shapes:")
-    print(" B_agent:", B_agent.shape, "n_states:", n_agent)
+    if printing:
+        print("Built B with shapes:")
+        print(" B_agent:", B_agent.shape, "n_states:", n_agent)
 
 
     # Build A state-observation map likelihoods
@@ -169,7 +170,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     A[1] = A_shelter
     A[2] = A_agent
 
-    print("Built A with shapes:", [A[i].shape for i in range(3)])
+    if printing:
+        print("Built A with shapes:", [A[i].shape for i in range(3)])
 
     # D priors — agent & threat location probabilities spread over whole arena (no idea), shelter known
     # find columns that contain any passable cells
@@ -184,8 +186,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     leftcol_states = arena.collect_states_in_column(leftmost_col)
     rightcol_states = arena.collect_states_in_column(rightmost_col)
 
-    print(f"Leftmost column index: {leftmost_col}, states count: {len(leftcol_states)}")
-    print(f"Rightmost column index: {rightmost_col}, states count: {len(rightcol_states)}")
+    if printing:
+        print(f"Leftmost column index: {leftmost_col}, states count: {len(leftcol_states)}")
+        print(f"Rightmost column index: {rightmost_col}, states count: {len(rightcol_states)}")
 
 
     D_agent = np.ones(n_agent, dtype=float) / float(n_agent)
@@ -203,8 +206,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     D[1] = D_threat
     D[2] = D_shelter
 
-    print("D shapes:", [D[i].shape for i in range(3)])
-    print("Agent prior sum:", D_agent.sum(), "Threat prior sum:", D_threat.sum(),
+    if printing:
+        print("D shapes:", [D[i].shape for i in range(3)])
+        print("Agent prior sum:", D_agent.sum(), "Threat prior sum:", D_threat.sum(),
         "Shelter-prior mass on leftcol:", D_shelter.sum())
 
     # create preferences (C matrix)
@@ -228,7 +232,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
         C_shelter[:,None].repeat(T,axis=1),
         C_agent[:,None].repeat(T,axis=1)]
 
-    print(f"C (log pref): {C}")
+    if printing:
+        print(f"C (log pref): {C}")
 
     # Convert C (list of arrays shape (n_outcomes, T)) to object array with one entry per modality
     C_obj = np.empty(3, dtype=object)
@@ -245,9 +250,10 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
 
     D = D_obj
 
-    print("C and D converted to object-arrays for pymdp.")
-    print("C shapes:", [C[i].shape for i in range(len(C))])
-    print("D shapes:", [D[i].shape for i in range(len(D))])
+    if printing:
+        print("C and D converted to object-arrays for pymdp.")
+        print("C shapes:", [C[i].shape for i in range(len(C))])
+        print("D shapes:", [D[i].shape for i in range(len(D))])
 
 
     # Generate policies and habits
@@ -267,8 +273,9 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     policies = generate_policies(n_actions, n_control_factors, policy_len)
     n_policies = len(policies)
 
-    print(f"Generated {n_policies} policies (h={policy_len}, n_actions={n_actions}).")
-    print("policy[0] shape:", policies[0].shape)
+    if printing:
+        print(f"Generated {n_policies} policies (h={policy_len}, n_actions={n_actions}).")
+        print("policy[0] shape:", policies[0].shape)
 
     # habit over stay (action 4)
     E_single = np.array([0.15, 0.15, 0.15, 0.15, (0.15 + delta_stay)])
@@ -297,7 +304,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
         k_ig = epistemic_drive # scalar for epistemic drive
     )
 
-    print("M agent constructed.")
+    if printing:
+        print("M agent constructed.")
 
 
     # Create D agent (danger/safety context)
@@ -416,7 +424,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
         use_states_info_gain = False  # don't allow random shit
     )
 
-    print("Danger controller constructed with controls:", list(D_control_scales.items()))
+    if printing:
+        print("Danger controller constructed with controls:", list(D_control_scales.items()))
 
 
     # Create threat inference controller agent
@@ -429,72 +438,73 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
 
     n_obs_smell = 10
 
-    # A observation model (likelihood): P(obs | danger)
+    # # A observation model (likelihood): P(obs | danger)
+    # A_T = np.zeros((n_obs_smell, n_identity, n_dist), dtype=float)
+
+    # # If it is a threat, smell should inversely correspond to distance
+    # A_T_main_w  = 0.70
+    # A_T_noise_w = 0.10
+
+    # M = np.zeros((n_obs_smell, n_dist), dtype=float)
+
+    # for col in range(n_dist):
+    #     diag_row = (n_obs_smell - 1) - col # inverse diagonal position
+    #     M[diag_row, col] = A_T_main_w
+
+    #     # noise at +- 1
+    #     if diag_row - 1 >= 0:
+    #         M[diag_row - 1, col] = A_T_noise_w
+    #     if diag_row + 1 < n_obs_smell:
+    #         M[diag_row + 1, col] = A_T_noise_w
+
+    # # For not threat, high smell is confusing/contains less information
+    # M0 = M.copy()
+    # likelihood_lower_T = 0.95
+    # M0[:, :2] = (1 - likelihood_lower_T) * M[:, :2] + likelihood_lower_T * np.ones((n_obs_smell, 1)) / n_obs_smell
+
+
+    # A_T[:, 0, :] = M0
+    # A_T[:, 1, :] = M
+
+    # A_T /= A_T.sum(axis=0, keepdims=True)
+
+    # A observation model (likelihood): P(obs | identity, distance)
+    # This scales the signal strength from 0.2 (Far/Blurry) to 0.9 (Close/Clear)
     A_T = np.zeros((n_obs_smell, n_identity, n_dist), dtype=float)
 
-    # If it is a threat, smell should inversely correspond to distance
-    A_T_main_w  = 0.70
-    A_T_noise_w = 0.10
-
-    M = np.zeros((n_obs_smell, n_dist), dtype=float)
+    # DYNAMIC PRECISION: 
+    # We want high confidence at dist 0, low confidence at dist 9.
+    # safe_weight is roughly 1/10 = 0.1
+    # At dist 9: threat_weight ~ 0.15 (barely distinguishable from safe) -> Belief ~55%
+    # At dist 0: threat_weight ~ 0.90 (very distinct) -> Belief ~90%
 
     for col in range(n_dist):
-        diag_row = (n_obs_smell - 1) - col # inverse diagonal position
-        M[diag_row, col] = A_T_main_w
+        # Calculate weight based on distance (Linear decay)
+        # col 0 (Close) -> w ~ 0.9
+        # col 9 (Far)   -> w ~ 0.15
+        slope = sensory_imprecision
+        # Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
+        # High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
+        w_main = 0.9 - (slope* (col / (n_dist - 1)))
+        
+        # Fill Threat Column (Identity 1)
+        diag_row = (n_obs_smell - 1) - col # Inverse diagonal
+        
+        # Distribute the weight
+        noise_rem = 1.0 - w_main
+        
+        # Fill the column with uniform noise first
+        A_T[:, 1, col] = noise_rem / (n_obs_smell - 1)
+        
+        # Set the peak (main diagonal)
+        A_T[diag_row, 1, col] = w_main
 
-        # noise at +- 1
-        if diag_row - 1 >= 0:
-            M[diag_row - 1, col] = A_T_noise_w
-        if diag_row + 1 < n_obs_smell:
-            M[diag_row + 1, col] = A_T_noise_w
-
-    # For not threat, high smell is confusing/contains less information
-    M0 = M.copy()
-    likelihood_lower_T = 0.95
-    M0[:, :2] = (1 - likelihood_lower_T) * M[:, :2] + likelihood_lower_T * np.ones((n_obs_smell, 1)) / n_obs_smell
-
-
-    A_T[:, 0, :] = M0
-    A_T[:, 1, :] = M
-
+    # Fill Not Threat Column (Identity 0) - Uniform / Flat
+    # A safe object smells 'random' or 'ambiguous' everywhere
+    A_T[:, 0, :] = 1.0 / n_obs_smell
     A_T /= A_T.sum(axis=0, keepdims=True)
 
     A_T_obj = np.empty(1, dtype=object); A_T_obj[0] = A_T
-
-    # # A observation model (likelihood): P(obs | identity, distance)
-# This scales the signal strength from 0.2 (Far/Blurry) to 0.9 (Close/Clear)
-# A_T = np.zeros((n_obs_smell, n_identity, n_dist), dtype=float)
-
-# # DYNAMIC PRECISION: 
-# # We want high confidence at dist 0, low confidence at dist 9.
-# # safe_weight is roughly 1/10 = 0.1
-# # At dist 9: threat_weight ~ 0.15 (barely distinguishable from safe) -> Belief ~55%
-# # At dist 0: threat_weight ~ 0.90 (very distinct) -> Belief ~90%
-
-# for col in range(n_dist):
-#     # Calculate weight based on distance (Linear decay)
-#     # col 0 (Close) -> w ~ 0.9
-#     # col 9 (Far)   -> w ~ 0.15
-# slope = 0.75
-# # Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
-# # High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
-#     w_main = 0.9 - (slope* (col / (n_dist - 1)))
-    
-#     # Fill Threat Column (Identity 1)
-#     diag_row = (n_obs_smell - 1) - col # Inverse diagonal
-    
-#     # Distribute the weight
-#     noise_rem = 1.0 - w_main
-    
-#     # Fill the column with uniform noise first
-#     A_T[:, 1, col] = noise_rem / (n_obs_smell - 1)
-    
-#     # Set the peak (main diagonal)
-#     A_T[diag_row, 1, col] = w_main
-
-# # Fill Not Threat Column (Identity 0) - Uniform / Flat
-# # A safe object smells 'random' or 'ambiguous' everywhere
-# A_T[:, 0, :] = 1.0 / n_obs_smell
 
     # control 0 = no-scale, control 1 = apply-scale (approach/investigate)
     T_control_scales = {
@@ -570,7 +580,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
         use_states_info_gain = False  # allow EFE-driven choice
     )
 
-    print("Identifier controller constructed with controls:", list(T_control_scales.items()))
+    if printing:
+        print("Identifier controller constructed with controls:", list(T_control_scales.items()))
 
     # Calculate implicit M agent params
 
@@ -584,4 +595,5 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
 
     M_policies = M_agent._construct_policies()
 
+    print("Setup complete")
     return arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states
