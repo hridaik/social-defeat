@@ -183,7 +183,7 @@ def calculate_metrics(df):
 def objective(trial, target_avg, target_std):
     # 1. Suggest Parameters
     id_threshold = trial.suggest_float("id_threshold", 0.55, 0.95)
-    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.1, 2.0)
+    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.1, 0.9)
     k_shelter = trial.suggest_float("k_shelter", 0.2, 2.0)
     k_threat = trial.suggest_float("k_threat", 0.2, 2.0)
 
@@ -202,11 +202,24 @@ def objective(trial, target_avg, target_std):
         # --- Run Simulation ---
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: STARTING...", flush=True)
-        history = run_sim(id_threshold=id_threshold, 
-                          sensory_imprecision=sensory_prec_slope, 
-                          k_shelter=k_shelter, 
-                          k_threat=k_threat,
-                          max_steps=2000)
+        try:
+                history = run_sim(id_threshold=id_threshold, 
+                                sensory_imprecision=sensory_prec_slope, 
+                                k_shelter=k_shelter, 
+                                k_threat=k_threat)
+                
+                # Check if history is valid (sometimes sims return empty if they crash silently)
+                if history is None or len(history['agent_loc']) < 2:
+                    raise ValueError("Simulation returned empty history.")
+
+        except (IndexError, ValueError, RuntimeWarning, Exception) as e:
+            # If the simulation crashes for ANY reason:
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[{timestamp}] Trial {trial.number} CRASHED: {e}. penalizing...", flush=True)
+            
+            # 1. Return a HUGE loss so Optuna learns to avoid these parameters
+            #    (Use a value much larger than your typical loss, e.g., 1000.0)
+            return 1000.0
         
         # Create DataFrame
         trajectory = pd.DataFrame({

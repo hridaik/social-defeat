@@ -218,7 +218,8 @@ if __name__ == "__main__":
     history = run_sim(
         gif_path=GIF_PATH,
         pkl_path=LOG_PATH,
-        max_steps=100,
+        max_steps=5,
+        sensory_imprecision=0.95,
         printing=True
     )
     print(f"Test simulation complete, time taken: {time.time() - start_time}s saved to {GIF_PATH} and {LOG_PATH}")
