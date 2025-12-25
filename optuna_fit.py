@@ -281,7 +281,7 @@ study = optuna.create_study(
     direction="minimize", 
     sampler=sampler, 
     pruner=pruner,
-    study_name="avg_mouse_fit_v1",
+    study_name="avg_mouse_fit",
     storage="sqlite:///avg_mouse_fit.db",
     load_if_exists=True
 )
