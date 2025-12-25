@@ -190,7 +190,7 @@ def objective(trial, target_avg, target_std):
     # 2. Dynamic Simulation Count (Optional tweak)
     # You can start with fewer sims and increase if the trial looks promising,
     # but standard pruning is usually cleaner.
-    n_sims = 5 
+    n_sims = 3
     
     # Store results to calculate running mean
     accumulated_metrics = {k: [] for k in metric_names}
@@ -211,6 +211,15 @@ def objective(trial, target_avg, target_std):
                 # Check if history is valid (sometimes sims return empty if they crash silently)
                 if history is None or len(history['agent_loc']) < 2:
                     raise ValueError("Simulation returned empty history.")
+                
+                # Create DataFrame
+                trajectory = pd.DataFrame({
+                    'timestep': range(len(history['agent_loc'])),
+                    'location': history['agent_loc']
+                })
+                
+                # Calculate metrics for this specific run
+                m = calculate_metrics(df=trajectory)
 
         except (IndexError, ValueError, RuntimeWarning, Exception) as e:
             # If the simulation crashes for ANY reason:
@@ -219,16 +228,7 @@ def objective(trial, target_avg, target_std):
             
             # 1. Return a HUGE loss so Optuna learns to avoid these parameters
             #    (Use a value much larger than your typical loss, e.g., 1000.0)
-            return 1000.0
-        
-        # Create DataFrame
-        trajectory = pd.DataFrame({
-            'timestep': range(len(history['agent_loc'])),
-            'location': history['agent_loc']
-        })
-        
-        # Calculate metrics for this specific run
-        m = calculate_metrics(df=trajectory) 
+            return 1000.0 
         
         # --- ACCUMULATE & CHECK LOSS ---
         current_loss = 0.0
@@ -271,11 +271,11 @@ def objective(trial, target_avg, target_std):
 # --- OPTIMIZATION SETUP ---
 
 # Use the Multivariate sampler for correlated parameters
-sampler = optuna.samplers.TPESampler(multivariate=True, seed=42)
+sampler = optuna.samplers.TPESampler(multivariate=True)
 
 # Use a Pruner. Hyperband is excellent for resource allocation.
 # It effectively runs many trials with few sims, and only the best get the full 5 sims.
-pruner = optuna.pruners.HyperbandPruner(min_resource=1, max_resource=5, reduction_factor=3)
+pruner = optuna.pruners.HyperbandPruner(min_resource=1, max_resource=3, reduction_factor=2)
 
 study = optuna.create_study(
     direction="minimize", 
@@ -286,6 +286,6 @@ study = optuna.create_study(
     load_if_exists=True
 )
 
-study.optimize(lambda t: objective(t, target_avg, target_std), n_trials=40)
+study.optimize(lambda t: objective(t, target_avg, target_std), n_trials=5)
 
 print(f"Best parameters: {study.best_params}")
