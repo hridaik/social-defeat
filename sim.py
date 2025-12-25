@@ -3,6 +3,8 @@ from utils import world_env, render_grid_frame_arena, decay_qs
 from setup import setup
 import imageio
 import pickle
+import time
+import pandas as pd
 
 def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.2, T_fr=0.2, max_steps=2000, id_threshold=0.8, \
             T_ticks=16, D_ticks=48, k_shelter=0.6, k_threat=0.8, threat_grad=[-0.10, -0.10, -0.10, -0.10, -0.10, -0.12, -0.15, -0.18, -0.21, -0.25], shelter_grad = [-0.0, 3.0], \
@@ -11,7 +13,7 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.2, T_fr=0.2, max_step
     arena, build_scaled_C, M_agent, D_agent, T_agent, D_control_scales, T_control_scales, U_agent_base, U_shelter_base, U_threat_base, U_T, U_D, E_single, rightcol_states, leftcol_states = setup(k_shelter=k_shelter, k_threat=k_threat, \
                                                                                                                                                                                                    threat_grad=threat_grad, shelter_grad=shelter_grad, \
                                                                                                                                                                                                     delta_stay=delta_stay, epistemic_drive=epistemic_drive, \
-                                                                                                                                                                                                    T_action=T_scale, D_action=D_scale, sensory_imprecision=sensory_imprecision)
+                                                                                                                                                                                                    T_action=T_scale, D_action=D_scale, sensory_imprecision=sensory_imprecision, printing=printing)
     
     world = world_env(arena=arena, true_agent_pos=(1, 0), true_threat_pos=rightcol_states[0], true_shelter_pos=np.array(leftcol_states, dtype=int))
 
@@ -207,7 +209,7 @@ def run_sim(gif_path=None, pkl_path=None, M_fr=0.1, D_fr=0.2, T_fr=0.2, max_step
     return history
 
 
-import time
+
 if __name__ == "__main__":
     print("Running Simulation in Standalone Mode")
     
@@ -216,10 +218,24 @@ if __name__ == "__main__":
     
     start_time = time.time()
     history = run_sim(
-        gif_path=GIF_PATH,
+        gif_path=None,
         pkl_path=LOG_PATH,
-        max_steps=5,
-        sensory_imprecision=0.95,
-        printing=True
+        max_steps=250,
+        sensory_imprecision=0.5,
+        printing=True,
+        epistemic_drive=3.0,
+        k_shelter=0,
+        k_threat=0,
+        delta_stay=0
     )
+
+    trajectory = pd.DataFrame({
+        'timestep': range(len(history['agent_loc'])),
+        'location': history['agent_loc']
+    })
+
+    for i in range(len(history['agent_loc'])):
+        if trajectory.iloc[i]['location'] > 56:
+            print(f'Invalid location at step {i}')
+
     print(f"Test simulation complete, time taken: {time.time() - start_time}s saved to {GIF_PATH} and {LOG_PATH}")

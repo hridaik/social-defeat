@@ -7,8 +7,8 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # "T" maze with the perpendicular arm on the right
     rows = 5
     left_cols = 0
-    corridor_cols = 6   # corridor width
-    right_cols = 9
+    corridor_cols = 9   # corridor width
+    right_cols = 6
     corridor_rows = (1,2,3)  # allow rows 1 and 2 (middle two rows), top(0) and bottom(3) are blocked in corridor
     mask, regions = make_two_rooms_with_corridor(rows=rows, left_cols=left_cols,
                                                 corridor_cols=corridor_cols, right_cols=right_cols,
@@ -20,6 +20,10 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # setup arena env
     arena = grid(mask=mask)
     n_states = arena.n_states
+
+    if printing:
+        valid_states = [arena.rc_to_state_idx(i[0], i[1]) for i in arena.valid_rc]
+        print(f'Arena states: {valid_states}')
 
 
     # SETUP M (Motor) agent
