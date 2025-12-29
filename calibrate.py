@@ -125,13 +125,11 @@ def calculate_metrics(df):
 
     return results
 
-FIXED_K_THREAT = 0.45 
-REAL_AVG_LAZINESS = 0.825
-LAZINESS_STD = 0.035
+FIXED_K_THREAT = 0.45
 
 metric_names = ['t_shelter', 't_investigating', 'n_sh_co', 'n_co_sh', 'n_co_ch', 'n_ch_co', 'entropy', 'laziness']
-target_avg = {'t_shelter': 0.218, 't_investigating': 0.186, 'n_sh_co': 13.05, 'n_co_sh': 13.0, 'n_co_ch': 9.59, 'n_ch_co': 9.41, 'entropy': 4.12, 'laziness': 0.825}
-target_std = {'t_shelter': 0.186, 't_investigating': 0.114, 'n_sh_co': 5.19, 'n_co_sh': 5.31, 'n_co_ch': 3.39, 'n_ch_co': 3.34, 'entropy': 0.76, 'laziness': 0.035}
+target_avg = {'t_shelter': 0.4475, 't_investigating': 0.149, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 10, 'n_ch_co': 9, 'entropy': 4.25, 'laziness': 0.825}
+target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_co_sh': 5.61, 'n_co_ch': 3.56, 'n_ch_co': 3.43, 'entropy': 0.58, 'laziness': 0.035}
 
 OUTPUT_DIR = "calibration_histories"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -139,7 +137,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 def objective(trial):
     id_threshold = trial.suggest_float("id_threshold", 0.55, 0.75)       # Trial 30 was 0.66
     sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.55, 0.75) # Trial 30 was 0.67
-    k_shelter = trial.suggest_float("k_shelter", 0.15, 0.40)             # Trial 30 was 0.25
+    k_shelter = trial.suggest_float("k_shelter", 0.15, 0.60)             # Trial 30 was 0.25
     
     delta_stay = trial.suggest_float("delta_stay", 0.15, 5.0)
 
@@ -147,7 +145,7 @@ def objective(trial):
                'n_co_sh': 0.5, 'n_co_ch': 0.5, 'n_ch_co': 0.5, 'entropy': 0.5, 'laziness': 1.0}
     accumulated_metrics = {k: [] for k in metric_names}
     
-    n_sims = 3
+    n_sims = 1
     for step in range(n_sims):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: STARTING...", flush=True)
