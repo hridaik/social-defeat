@@ -233,7 +233,7 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
 
     study = optuna.create_study(
-        study_name=f"fit_{mouse_name}_pre",
+        study_name=f"{mouse_name}_pre",
         storage=db_url,
         direction="minimize",
         load_if_exists=True,
