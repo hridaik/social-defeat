@@ -237,7 +237,7 @@ def objective(trial, target_avg, target_std):
 
 
         for k, v in running_means.items():
-            trial.set_user_attr(k, v)
+            trial.set_user_attr(k, float(v))
             
         trial.report(current_loss, step=step)
 

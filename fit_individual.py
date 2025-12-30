@@ -212,7 +212,7 @@ def objective(trial, target_avg, target_std, output_dir):
             loss += weight * z_sq
 
         for k, v in m.items():
-            trial.set_user_attr(k, v)
+            trial.set_user_attr(k, float(v))
             
         return loss
 
