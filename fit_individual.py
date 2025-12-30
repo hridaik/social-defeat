@@ -233,7 +233,7 @@ if __name__ == "__main__":
     os.makedirs(output_dir, exist_ok=True)
 
     study = optuna.create_study(
-        study_name=f"fit_{mouse_name}_day1",
+        study_name=f"fit_{mouse_name}_pre",
         storage=db_url,
         direction="minimize",
         load_if_exists=True,
@@ -252,6 +252,16 @@ if __name__ == "__main__":
         study.enqueue_trial(seed_params)
 
     print(f"Launching optimization for {mouse_name}...")
-    study.optimize(lambda t: objective(t, target_avg, target_std, output_dir), n_trials=20)
+    study.optimize(lambda t: objective(t, target_avg, target_std, output_dir), n_trials=10)
     
     print("Best params:", study.best_params)
+
+# nice -n 10 python fit_individual.py --mouse Resilient > log_Res_1.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Resilient > log_Res_2.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Resilient > log_Res_3.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Susceptible > log_Sus_1.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Susceptible > log_Sus_2.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Susceptible > log_Sus_3.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Control > log_Con_1.txt 2>&1 &
+# nice -n 10 python fit_individual.py --mouse Control > log_Con_2.txt 2>&1 &
+
