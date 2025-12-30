@@ -227,8 +227,8 @@ if __name__ == "__main__":
     
     target_avg = REAL_MOUSE_DATA[mouse_name]['avg']
     target_std = REAL_MOUSE_DATA[mouse_name]['std']
-    
-    db_url = f"sqlite:///{mouse_name}_day1.db"
+    phase = 'hab'
+    db_url = f"sqlite:///{mouse_name}_{phase}.db"
     output_dir = f"{mouse_name}_history"
     os.makedirs(output_dir, exist_ok=True)
 
