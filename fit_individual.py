@@ -1,9 +1,15 @@
 import optuna
 import pandas as pd
 import numpy as np
-from sim import run_sim
 import os
+import sys
+import json
+import argparse
 import datetime
+from sim import run_sim
+from scipy.stats import entropy
+# from utils import calculate_metrics
+
 
 final_mask = np.array([
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
@@ -75,8 +81,6 @@ def calculate_zone_transitions(df, active_cells_mapping=active_cells):
     
     return results
 
-from scipy.stats import entropy
-
 def calculate_heatmap_entropy(df, num_active_bins=57):
     counts = df['location'].value_counts()
     prob_dist = np.zeros(num_active_bins)
@@ -125,92 +129,129 @@ def calculate_metrics(df):
 
     return results
 
-FIXED_K_THREAT = 0.45
+
+WEIGHTS = {
+    't_shelter': 2.0, 
+    't_investigating': 2.0, 
+    'n_sh_co': 0.5, 
+    'n_co_sh': 0.5, 
+    'n_co_ch': 0.5, 
+    'n_ch_co': 0.5, 
+    'entropy': 0.5,
+    'laziness': 1.0
+}
 
 metric_names = ['t_shelter', 't_investigating', 'n_sh_co', 'n_co_sh', 'n_co_ch', 'n_ch_co', 'entropy', 'laziness']
-target_avg = {'t_shelter': 0.4475, 't_investigating': 0.149, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 10, 'n_ch_co': 9, 'entropy': 4.25, 'laziness': 0.825}
+# target_avg = {'t_shelter': 0.4475, 't_investigating': 0.149, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 10, 'n_ch_co': 9, 'entropy': 4.25, 'laziness': 0.825}
 target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_co_sh': 5.61, 'n_co_ch': 3.56, 'n_ch_co': 3.43, 'entropy': 0.58, 'laziness': 0.035}
 
-OUTPUT_DIR = "calibration_histories"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-def objective(trial):
-    id_threshold = trial.suggest_float("id_threshold", 0.55, 0.75)       # Trial 30 was 0.66
-    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.55, 0.75) # Trial 30 was 0.67
-    k_shelter = trial.suggest_float("k_shelter", 0.15, 1.50)             # Trial 30 was 0.25
-    k_threat = trial.suggest_float("k_threat", 0.15, 1.50)
-    delta_stay = trial.suggest_float("delta_stay", 0.15, 5.0)
+# HAB 3 only
+REAL_MOUSE_DATA = {
+    "Resilient": {
+        # 0.562	0.044	18	18	12	12	3.909343409	0.856
+        "avg": {'t_shelter': 0.562, 't_investigating': 0.044, 'n_sh_co': 18, 'n_co_sh': 18, 'n_co_ch': 12, 'n_ch_co': 12, 'entropy': 3.91, 'laziness': 0.856},
+        "std": target_std
+    },
+    "Susceptible": {
+        # 0.3815	0.23575	13.5	13.5	8	7.5	4.138084203	0.85075
+        "avg": {'t_shelter': 0.3815, 't_investigating': 0.23575, 'n_sh_co': 13.5, 'n_co_sh': 13.5, 'n_co_ch': 8, 'n_ch_co': 7.5, 'entropy': 4.14, 'laziness': 0.851},
+        "std": target_std
+    },
+    "Control": {
+        # 0.44675	0.166875	15.3	15.5	9.75	9.5	4.431234174	0.803
+        "avg": {'t_shelter': 0.447, 't_investigating': 0.167, 'n_sh_co': 15.3, 'n_co_sh': 15.5, 'n_co_ch': 9.75, 'n_ch_co': 9.5, 'entropy': 4.43, 'laziness': 0.803},
+        "std": target_std
+    }
+}
 
-    weights = {'t_shelter': 2.0, 't_investigating': 2.0, 'n_sh_co': 0.5, 
-               'n_co_sh': 0.5, 'n_co_ch': 0.5, 'n_ch_co': 0.5, 'entropy': 0.5, 'laziness': 1.0}
-    accumulated_metrics = {k: [] for k in metric_names}
-    
+def objective(trial, target_avg, target_std, output_dir):
+    id_threshold = trial.suggest_float("id_threshold", 0.4, 0.9)       
+    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.3, 0.9) 
+    k_shelter = trial.suggest_float("k_shelter", 0.1, 1.5)
+    k_threat = trial.suggest_float("k_threat", 0.2, 1.5)
+    delta_stay = trial.suggest_float("delta_stay", 1.0, 3.0)
+
     n_sims = 1
+    
     for step in range(n_sims):
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: STARTING...", flush=True)
-
         try:
-            # Run Sim
+            timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+            print(f"[{timestamp}] Trial {trial.number} Running...", flush=True)
+
             history = run_sim(
                 id_threshold=id_threshold,
                 sensory_imprecision=sensory_prec_slope,
                 k_shelter=k_shelter,
-                k_threat=FIXED_K_THREAT,
+                k_threat=k_threat,
                 delta_stay=delta_stay
             )
             
             if history is None or len(history['agent_loc']) < 2: return 1000.0
             
             traj = pd.DataFrame({'location': history['agent_loc']})
-            save_path = os.path.join(OUTPUT_DIR, f"trial_{trial.number}_sim{step}.csv")
+            
+            save_path = os.path.join(output_dir, f"trial_{trial.number}.csv")
             traj.to_csv(save_path, index=False)
             
             m = calculate_metrics(traj)
-
+            
         except Exception as e:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[{timestamp}] Trial {trial.number} CRASHED: {e}. penalizing...", flush=True)
+            print(f"Crash in Trial {trial.number}: {e}")
             return 1000.0
         
-        current_loss = 0.0
+        loss = 0.0
         
-        # Update our history of metrics
-        for k in metric_names:
-            accumulated_metrics[k].append(m[k])
+        for k, weight in WEIGHTS.items():
+            t_avg = target_avg.get(k)
+            t_std = target_std.get(k)
+            
+            val = m[k]
+            
+            z_sq = ((val - t_avg) / (t_std + 1e-6)) ** 2
+            loss += weight * z_sq
 
-        # Calculate the running mean for all metrics so far
-        running_means = {k: np.mean(v) for k, v in accumulated_metrics.items()}
-
-        for k in weights:
-            metric_val = running_means.get(k)             
-            diff = metric_val - target_avg[k]
-            std = target_std[k] + 1e-6
-            current_loss += weights[k] * ((diff / std) ** 2)
-        
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(f"[{timestamp}] Trial {trial.number}, Sim {step+1}/{n_sims}: FINISHED. Current Loss: {current_loss:.4f}", flush=True)
-
-        for k, v in running_means.items():
+        for k, v in m.items():
             trial.set_user_attr(k, v)
             
-        trial.report(current_loss, step=step)
-
-        if step > 0 and trial.should_prune():
-            raise optuna.TrialPruned()
-
-    return current_loss
+        return loss
 
 if __name__ == "__main__":
-    sampler = optuna.samplers.TPESampler(multivariate=True)
-    pruner = optuna.pruners.HyperbandPruner(min_resource=1, max_resource=3, reduction_factor=2)
-    study = optuna.create_study(direction="minimize", 
-                                sampler=sampler,
-                                pruner=pruner,
-                                study_name="calibration",
-                                storage="sqlite:///calibration.db", 
-                                load_if_exists=True)
+    # python fit_individual.py --mouse Mouse_A --seed_file calibration_best.json
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mouse", type=str, required=True)
+    args = parser.parse_args()
+
+    mouse_name = args.mouse
+    print(f"--- FITTING INDIVIDUAL: {mouse_name} ---")
     
-    study.optimize(objective, n_trials=5) 
+    target_avg = REAL_MOUSE_DATA[mouse_name]['avg']
+    target_std = REAL_MOUSE_DATA[mouse_name]['std']
+    
+    db_url = f"sqlite:///{mouse_name}_day1.db"
+    output_dir = f"{mouse_name}_history"
+    os.makedirs(output_dir, exist_ok=True)
+
+    study = optuna.create_study(
+        study_name=f"fit_{mouse_name}_day1",
+        storage=db_url,
+        direction="minimize",
+        load_if_exists=True,
+        sampler=optuna.samplers.TPESampler(multivariate=True)
+    )
+
+    seed_params = {
+        "id_threshold": 0.70,
+        "sensory_prec_slope": 0.64,
+        "k_shelter": 0.36,
+        "delta_stay": 1.37,
+        "k_threat": 0.45
+        } # avg mouse
+
+    if len(study.trials) == 0:
+        study.enqueue_trial(seed_params)
+
+    print(f"Launching optimization for {mouse_name}...")
+    study.optimize(lambda t: objective(t, target_avg, target_std, output_dir), n_trials=20)
     
     print("Best params:", study.best_params)

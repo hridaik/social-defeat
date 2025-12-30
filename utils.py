@@ -335,3 +335,121 @@ def render_grid_frame_arena(agent_state, shelter_state, visited_states, step,
     final_img.paste(img_grid, (0, strip_h))
 
     return np.array(final_img)
+
+
+final_mask = np.array([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+])
+
+active_cells = np.argwhere(final_mask == 1) 
+bin_id_map = {tuple(pos): i for i, pos in enumerate(active_cells)}
+
+def frac_time_spent_in_shelter(df):
+    loc_table = df.copy()
+    shelter_indices = [6, 21, 36]
+    total_t = len(loc_table)
+    shelter_t = 0
+    for timestep in range(total_t):
+        loc = loc_table.iloc[timestep]['location']
+        if loc in shelter_indices:
+            shelter_t += 1
+
+    frac = shelter_t / total_t
+    return frac
+
+def frac_time_spent_investigating(df):
+    loc_table = df.copy()
+    investigation_indices = [33, 34, 35, 48, 54, 17, 18, 19, 20, 32, 47, 53] # cells at a distance of <= 2 from threat cluster
+    total_t = len(loc_table)
+    inv_t = 0
+    in_zone = [loc_table.iloc[t]['location'] in investigation_indices for t in range(total_t)]
+    for t in range(1, total_t - 1): # Skip first and last frame to avoid index errors
+        if in_zone[t] and in_zone[t-1] and in_zone[t+1]:
+            inv_t += 1
+
+    frac = inv_t / total_t
+    return frac
+
+
+def calculate_zone_transitions(df, active_cells_mapping=active_cells):
+    def get_zone(bin_id):
+        r, c = active_cells_mapping[bin_id]
+        if c >= 9:
+            return "Chamber"
+        elif c == 0:
+            return "Shelter"
+        elif 1 <= r <= 3:
+            return "Corridor"
+
+    temp_df = df.copy()
+    temp_df['zone'] = temp_df['location'].apply(get_zone)
+    temp_df['prev_zone'] = temp_df['zone'].shift(1)
+    
+    # Filter for rows where the zone actually changed
+    transitions = temp_df[temp_df['zone'] != temp_df['prev_zone']].dropna(subset=['prev_zone'])
+
+    transitions['path'] = transitions['prev_zone'] + " -> " + transitions['zone']
+    counts = transitions['path'].value_counts()
+
+    results = {
+        "Shelter to Corridor": counts.get("Shelter -> Corridor", 0),
+        "Corridor to Shelter": counts.get("Corridor -> Shelter", 0),
+        "Corridor to Chamber": counts.get("Corridor -> Chamber", 0),
+        "Chamber to Corridor": counts.get("Chamber -> Corridor", 0)
+    }
+    
+    return results
+
+from scipy.stats import entropy
+
+def calculate_heatmap_entropy(df, num_active_bins=57):
+    counts = df['location'].value_counts()
+    prob_dist = np.zeros(num_active_bins)
+    
+    for bin_id, count in counts.items():
+        if 0 <= bin_id < num_active_bins:
+            prob_dist[bin_id] = count
+            
+    if np.sum(prob_dist) == 0:
+        return 0.0
+    
+    prob_dist = prob_dist / np.sum(prob_dist)
+
+    return entropy(prob_dist, base=2)
+
+def calculate_laziness(df):
+    temp_df = df.copy()
+    temp_df['prev_location'] = temp_df['location'].shift(1)
+    lazy_rows = temp_df[temp_df['location'] == temp_df['prev_location']]
+
+    if len(temp_df) == 0:
+        return 0.0
+    
+    return len(lazy_rows)/len(temp_df)
+
+def calculate_metrics(df):
+    results = {}
+    t_shelter = frac_time_spent_in_shelter(df)
+    t_invest = frac_time_spent_investigating(df)
+    transition_dict = calculate_zone_transitions(df)
+    n_sh_co = transition_dict['Shelter to Corridor']
+    n_co_sh = transition_dict["Corridor to Shelter"]
+    n_co_ch = transition_dict["Corridor to Chamber"]
+    n_ch_co = transition_dict["Chamber to Corridor"]
+    entropy = calculate_heatmap_entropy(df)
+    laziness = calculate_laziness(df)
+
+    results['t_shelter'] = t_shelter
+    results['t_investigating'] = t_invest
+    results['n_sh_co'] = n_sh_co
+    results['n_co_sh'] = n_co_sh
+    results['n_co_ch'] = n_co_ch
+    results['n_ch_co'] = n_ch_co
+    results['entropy'] = entropy
+    results['laziness'] = laziness
+
+    return results
