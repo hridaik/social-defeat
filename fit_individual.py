@@ -166,8 +166,8 @@ REAL_MOUSE_DATA = {
 }
 
 def objective(trial, target_avg, target_std, output_dir):
-    id_threshold = trial.suggest_float("id_threshold", 0.1, 0.6)       
-    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.05, 0.5) 
+    id_threshold = trial.suggest_float("id_threshold", 0.1, 0.5)       
+    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.01, 0.3) 
     k_shelter = trial.suggest_float("k_shelter", 0.5, 4.0)
     k_threat = trial.suggest_float("k_threat", 0.5, 4.0)
     delta_stay = trial.suggest_float("delta_stay", 1.0, 6.0)
@@ -241,12 +241,12 @@ if __name__ == "__main__":
     )
 
     seed_params = {
-        "id_threshold": 0.35,
-        "sensory_prec_slope": 0.15,
-        "k_shelter": 1.0,
-        "delta_stay": 2.0,
-        "k_threat": 1.5
-        } # avg mouse
+        "id_threshold": 0.2,
+        "sensory_prec_slope": 0.1,
+        "k_shelter": 4.0,
+        "delta_stay": 4.0,
+        "k_threat": 3.0
+        }
 
     if len(study.trials) == 0:
         study.enqueue_trial(seed_params)
