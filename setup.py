@@ -481,7 +481,7 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
     # safe_weight is roughly 1/10 = 0.1
     # At dist 9: threat_weight ~ 0.15 (barely distinguishable from safe) -> Belief ~55%
     # At dist 0: threat_weight ~ 0.90 (very distinct) -> Belief ~90%
-
+    max_precision = 0.9 # How well mouse "sees" at distance zero, or max P(threat) given any obs
     for col in range(n_dist):
         # Calculate weight based on distance (Linear decay)
         # col 0 (Close) -> w ~ 0.9
@@ -489,7 +489,7 @@ def setup(M_policy_precision = 4.0, k_threat=0.8, k_shelter=0.6, threat_grad = [
         slope = sensory_imprecision
         # Low Slope (e.g., 0.1): "Eagle Eye." The mouse sees the threat clearly from across the room.
         # High Slope (e.g., 1.5): "Myopic." The mouse sees a blurry mess until it is right next to the object.
-        w_main = 0.9 - (slope* (col / (n_dist - 1)))
+        w_main = max_precision - (slope* (col / (n_dist - 1)))
         
         # Fill Threat Column (Identity 1)
         diag_row = (n_obs_smell - 1) - col # Inverse diagonal
