@@ -241,11 +241,11 @@ if __name__ == "__main__":
     )
 
     seed_params = {
-        "id_threshold": 0.70,
-        "sensory_prec_slope": 0.64,
-        "k_shelter": 0.36,
-        "delta_stay": 1.37,
-        "k_threat": 0.45
+        "id_threshold": 0.35,
+        "sensory_prec_slope": 0.15,
+        "k_shelter": 1.0,
+        "delta_stay": 2.0,
+        "k_threat": 1.5
         } # avg mouse
 
     if len(study.trials) == 0:
