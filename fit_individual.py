@@ -168,9 +168,9 @@ REAL_MOUSE_DATA = {
 def objective(trial, target_avg, target_std, output_dir):
     id_threshold = trial.suggest_float("id_threshold", 0.1, 0.5)       
     sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.01, 0.3) 
-    k_shelter = trial.suggest_float("k_shelter", 0.5, 4.0)
-    k_threat = trial.suggest_float("k_threat", 0.5, 4.0)
-    delta_stay = trial.suggest_float("delta_stay", 1.0, 6.0)
+    k_shelter = trial.suggest_float("k_shelter", 1.5, 10.0)
+    k_threat = trial.suggest_float("k_threat", 0.1, 1.0)
+    delta_stay = trial.suggest_float("delta_stay", 3.0, 12.0)
 
     n_sims = 1
     
@@ -241,11 +241,11 @@ if __name__ == "__main__":
     )
 
     seed_params = {
-        "id_threshold": 0.2,
+        "id_threshold": 0.15,
         "sensory_prec_slope": 0.1,
-        "k_shelter": 4.0,
-        "delta_stay": 4.0,
-        "k_threat": 3.0
+        "k_shelter": 6.0,
+        "k_threat": 0.2,
+        "delta_stay": 6.0
         }
 
     if len(study.trials) == 0:
