@@ -175,11 +175,11 @@ pre_params = {
         }
 
 def objective(trial, target_avg, target_std, output_dir):
-    id_threshold = trial.suggest_float("id_threshold", 0.1, pre_params['id_threshold'] + 0.05) # Directional lock  
+    id_threshold = trial.suggest_float("id_threshold", 0.05, 0.45) # Directional lock  
     sensory_prec_slope = pre_params['sensory_prec_slope'] # Locked - mouse hardware 
-    k_shelter = trial.suggest_float("k_shelter", 0.1, 3.0)
-    k_threat = trial.suggest_float("k_threat", 0.1, 3.0)
-    delta_stay = trial.suggest_float("delta_stay", 0.5, 4.0)
+    k_shelter = trial.suggest_float("k_shelter", 1.0, 5.0)
+    k_threat = trial.suggest_float("k_threat", 1.0, 5.0)
+    delta_stay = trial.suggest_float("delta_stay", 0.1, 1.5)
 
     n_sims = 1
     
@@ -250,10 +250,10 @@ if __name__ == "__main__":
     )
 
     seed_params = {
-        "id_threshold": 0.54,
+        "id_threshold": 0.3,
         "sensory_prec_slope": 0.63,
-        "k_shelter": 0.57,
-        "k_threat": 0.84,
+        "k_shelter": 1.5,
+        "k_threat": 1.0,
         "delta_stay": 1.41
         } # == pre-defeat params
 
