@@ -148,11 +148,11 @@ target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_c
 
 # DEF 2 only
 REAL_MOUSE_DATA = {
-    # "Resilient": {
-        # 0.562	0.044	18	18	12	12	3.909343409	0.856
-        # "avg": {'t_shelter': 0.562, 't_investigating': 0.044, 'n_sh_co': 18, 'n_co_sh': 18, 'n_co_ch': 12, 'n_ch_co': 12, 'entropy': 3.91, 'laziness': 0.856},
-        # "std": target_std
-    # },
+    "Resilient": {
+        # 0.5385	0.053	14	14	8	8	3.818612692	0.853
+        "avg": {'t_shelter': 0.54, 't_investigating': 0.053, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 8, 'n_ch_co': 8, 'entropy': 3.82, 'laziness': 0.853},
+        "std": target_std
+    },
     "Susceptible": {
         # 0.3815	0.23575	13.5	13.5	8	7.5	4.138084203	0.85075
         # 0.67875	0.05375	16.5	16	7.5	7	3.152078214	0.8685
@@ -167,11 +167,11 @@ REAL_MOUSE_DATA = {
 }
 
 pre_params = {
-        "id_threshold": 0.54,
-        "sensory_prec_slope": 0.63,
-        "k_shelter": 0.57,
-        "k_threat": 0.84,
-        "delta_stay": 1.41
+        "id_threshold": 0.102,
+        "sensory_prec_slope": 0.055,
+        "k_shelter": 4.95,
+        "k_threat": 0.115,
+        "delta_stay": 3.154
         }
 
 def objective(trial, target_avg, target_std, output_dir):
