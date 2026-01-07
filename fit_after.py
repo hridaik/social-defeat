@@ -175,11 +175,11 @@ pre_params = {
         }
 
 def objective(trial, target_avg, target_std, output_dir):
-    id_threshold = trial.suggest_float("id_threshold", 0.05, 0.45) # Directional lock  
+    id_threshold = trial.suggest_float("id_threshold", 0.01, 0.45) # Directional lock  
     sensory_prec_slope = pre_params['sensory_prec_slope'] # Locked - mouse hardware 
-    k_shelter = trial.suggest_float("k_shelter", 1.0, 5.0)
-    k_threat = trial.suggest_float("k_threat", 1.0, 5.0)
-    delta_stay = trial.suggest_float("delta_stay", 0.1, 1.5)
+    k_shelter = trial.suggest_float("k_shelter", 2.0, 8.0)
+    k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
+    delta_stay = trial.suggest_float("delta_stay", 2.0, 7.0)
 
     n_sims = 1
     
@@ -249,14 +249,22 @@ if __name__ == "__main__":
         sampler=optuna.samplers.TPESampler(multivariate=True)
     )
 
-    seed_params = {
-        "id_threshold": 0.3,
-        "sensory_prec_slope": 0.63,
-        "k_shelter": 1.5,
-        "k_threat": 1.0,
-        "delta_stay": 1.41
-        } # == pre-defeat params
+    # seed_params = {
+    #     "id_threshold": 0.3,
+    #     "sensory_prec_slope": 0.63,
+    #     "k_shelter": 1.5,
+    #     "k_threat": 1.0,
+    #     "delta_stay": 1.41
+    #     } # == pre-defeat params
 
+    seed_params = {
+        "id_threshold": 0.05,
+        "sensory_prec_slope": 0.63,
+        "k_shelter": 5.0,
+        "k_threat": 0.1,
+        "delta_stay": 3.5
+        }
+    
     if len(study.trials) == 0:
         study.enqueue_trial(seed_params)
 
