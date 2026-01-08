@@ -182,10 +182,10 @@ def objective(trial, target_avg, target_std, output_dir):
     # delta_stay = trial.suggest_float("delta_stay", 0.5, 3.5)
 
     id_threshold = trial.suggest_float("id_threshold", 0.01, 0.4) # Directional lock  
-    sensory_prec_slope = pre_params['sensory_prec_slope'] # Locked - mouse hardware 
+    sensory_prec_slope = 0.08 # pre_params['sensory_prec_slope'] # Locked - mouse hardware 
     k_shelter = trial.suggest_float("k_shelter", 2.5, 7.0)
     k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
-    delta_stay = trial.suggest_float("delta_stay", 0.5, 7.0)
+    delta_stay = trial.suggest_float("delta_stay", 0.5, 3.5)
 
     n_sims = 1
     
