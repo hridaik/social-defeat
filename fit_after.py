@@ -166,7 +166,18 @@ REAL_MOUSE_DATA = {
     # }
 }
 
-pre_params = {
+# Params = [id_threshold: 0.539333414194765, sensory_prec_slope: 0.6296675379904029, k_shelter: 0.5697167014973706, k_threat: 0.8427542495799953, delta_stay: 1.4143050933480497]
+sus_pre_params = {
+        "id_threshold": 0.54,
+        "sensory_prec_slope": 0.63,
+        "k_shelter": 0.57,
+        "k_threat": 0.84,
+        "delta_stay": 1.41
+        }
+
+
+
+res_pre_params = {
         "id_threshold": 0.102,
         "sensory_prec_slope": 0.055,
         "k_shelter": 4.95,
@@ -174,18 +185,22 @@ pre_params = {
         "delta_stay": 3.154
         }
 
-def objective(trial, target_avg, target_std, output_dir):
-    # id_threshold = trial.suggest_float("id_threshold", 0.01, 0.45) # Directional lock  
-    # sensory_prec_slope = pre_params['sensory_prec_slope'] # Locked - mouse hardware 
-    # k_shelter = trial.suggest_float("k_shelter", 2.0, 8.0)
-    # k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
-    # delta_stay = trial.suggest_float("delta_stay", 0.5, 3.5)
 
-    id_threshold = trial.suggest_float("id_threshold", 0.01, 0.4) # Directional lock  
-    sensory_prec_slope = 0.08 # pre_params['sensory_prec_slope'] # Locked - mouse hardware 
-    k_shelter = trial.suggest_float("k_shelter", 2.5, 7.0)
-    k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
-    delta_stay = trial.suggest_float("delta_stay", 0.5, 7.0)
+
+def objective(trial, target_avg, target_std, output_dir, mouse_name):
+    if mouse_name == 'Susceptible':
+        id_threshold = trial.suggest_float("id_threshold", 0.01, 0.45) # Directional lock  
+        sensory_prec_slope = sus_pre_params['sensory_prec_slope'] # Locked - mouse hardware 
+        k_shelter = trial.suggest_float("k_shelter", 2.0, 8.0)
+        k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
+        delta_stay = trial.suggest_float("delta_stay", 0.5, 3.0)
+
+    else:
+        id_threshold = trial.suggest_float("id_threshold", 0.01, 0.4) # Directional lock  
+        sensory_prec_slope = 0.08 # pre_params['sensory_prec_slope'] # Locked - mouse hardware 
+        k_shelter = trial.suggest_float("k_shelter", 2.5, 7.0)
+        k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
+        delta_stay = trial.suggest_float("delta_stay", 0.5, 7.0)
 
     n_sims = 1
     
@@ -255,27 +270,28 @@ if __name__ == "__main__":
         sampler=optuna.samplers.TPESampler(multivariate=True)
     )
 
-    seed_params = {
-        "id_threshold": 0.215,
-        "sensory_prec_slope": 0.08,
-        "k_shelter": 4.86,
-        "k_threat": 0.57,
-        "delta_stay": 5.2
-        } # == pre-defeat params
-
-    # seed_params = {
-    #     "id_threshold": 0.05,
-    #     "sensory_prec_slope": 0.63,
-    #     "k_shelter": 5.0,
-    #     "k_threat": 0.1,
-    #     "delta_stay": 1.5
-    #     } # sus
+    if mouse_name == 'Susceptible':
+        seed_params = {
+            "id_threshold": 0.05,
+            "sensory_prec_slope": 0.63,
+            "k_shelter": 5.0,
+            "k_threat": 0.1,
+            "delta_stay": 1.5
+            } # sus
+    else:
+        seed_params = {
+            "id_threshold": 0.215,
+            "sensory_prec_slope": 0.08,
+            "k_shelter": 4.86,
+            "k_threat": 0.57,
+            "delta_stay": 5.2
+            } # == pre-defeat params
     
     if len(study.trials) == 0:
         study.enqueue_trial(seed_params)
 
     print(f"Launching optimization for {mouse_name}...")
-    study.optimize(lambda t: objective(t, target_avg, target_std, output_dir), n_trials=100)
+    study.optimize(lambda t: objective(t, target_avg, target_std, output_dir, mouse_name), n_trials=100)
     
     print("Best params:", study.best_params)
 
