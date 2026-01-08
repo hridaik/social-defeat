@@ -179,7 +179,7 @@ def objective(trial, target_avg, target_std, output_dir):
     sensory_prec_slope = pre_params['sensory_prec_slope'] # Locked - mouse hardware 
     k_shelter = trial.suggest_float("k_shelter", 2.0, 8.0)
     k_threat = trial.suggest_float("k_threat", 0.05, 1.5)
-    delta_stay = trial.suggest_float("delta_stay", 2.0, 7.0)
+    delta_stay = trial.suggest_float("delta_stay", 0.5, 3.5)
 
     n_sims = 1
     
@@ -262,7 +262,7 @@ if __name__ == "__main__":
         "sensory_prec_slope": 0.63,
         "k_shelter": 5.0,
         "k_threat": 0.1,
-        "delta_stay": 3.5
+        "delta_stay": 1.5
         }
     
     if len(study.trials) == 0:
