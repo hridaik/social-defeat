@@ -72,6 +72,73 @@ TARGETS = {
     },
 }
 
+TARGETS = {
+    '13_def1': {
+        'avg': {'t_shelter': 0.5015, 't_investigating': 0.126, 'n_sh_co': 9, 'n_co_sh': 9, 'n_co_ch': 8, 'n_ch_co': 8, 'heatmap_entropy': 4.157401889, 'laziness': 0.8345},
+        'std': target_std
+    },
+    '13_def3': {
+        'avg': {'t_shelter': 0.2165, 't_investigating': 0.2755, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 13, 'n_ch_co': 14, 'heatmap_entropy': 4.679772779, 'laziness': 0.7895},
+        'std': target_std
+    },
+    '14_def1': {
+        'avg': {'t_shelter': 0.4895, 't_investigating': 0.104, 'n_sh_co': 13, 'n_co_sh': 13, 'n_co_ch': 9, 'n_ch_co': 9, 'heatmap_entropy': 3.746474719, 'laziness': 0.8495},
+        'std': target_std
+    },
+    '14_def3': {
+        'avg': {'t_shelter': 0.3215, 't_investigating': 0.2595, 'n_sh_co': 11, 'n_co_sh': 11, 'n_co_ch': 12, 'n_ch_co': 12, 'heatmap_entropy': 4.166432251, 'laziness': 0.826},
+        'std': target_std
+    },
+    '15_def1': {
+        'avg': {'t_shelter': 0.688, 't_investigating': 0.0825, 'n_sh_co': 10, 'n_co_sh': 10, 'n_co_ch': 4, 'n_ch_co': 4, 'heatmap_entropy': 2.652491439, 'laziness': 0.9215},
+        'std': target_std
+    },
+    '15_def3': {
+        'avg': {'t_shelter': 0.354, 't_investigating': 0.1315, 'n_sh_co': 15, 'n_co_sh': 16, 'n_co_ch': 7, 'n_ch_co': 7, 'heatmap_entropy': 4.345699479, 'laziness': 0.8325},
+        'std': target_std
+    },
+    '16_def1': {
+        'avg': {'t_shelter': 0.1445, 't_investigating': 0.387, 'n_sh_co': 7, 'n_co_sh': 6, 'n_co_ch': 7, 'n_ch_co': 6, 'heatmap_entropy': 4.487010226, 'laziness': 0.811},
+        'std': target_std
+    },
+    '16_def3': {
+        'avg': {'t_shelter': 0.6055, 't_investigating': 0.1115, 'n_sh_co': 11, 'n_co_sh': 10, 'n_co_ch': 11, 'n_ch_co': 10, 'heatmap_entropy': 2.828770281, 'laziness': 0.8585},
+        'std': target_std
+    },
+    '17_def1': {
+        'avg': {'t_shelter': 0.4405, 't_investigating': 0.2235, 'n_sh_co': 7, 'n_co_sh': 7, 'n_co_ch': 8, 'n_ch_co': 9, 'heatmap_entropy': 4.068416593, 'laziness': 0.8595},
+        'std': target_std
+    },
+    '17_def3': {
+        'avg': {'t_shelter': 0.426, 't_investigating': 0.2915, 'n_sh_co': 8, 'n_co_sh': 8, 'n_co_ch': 5, 'n_ch_co': 6, 'heatmap_entropy': 3.74524117, 'laziness': 0.8805},
+        'std': target_std
+    },
+    '18_def1': {
+        'avg': {'t_shelter': 0.4175, 't_investigating': 0.1405, 'n_sh_co': 22, 'n_co_sh': 22, 'n_co_ch': 13, 'n_ch_co': 13, 'heatmap_entropy': 4.564578899, 'laziness': 0.8215},
+        'std': target_std
+    },
+    '18_def3': {
+        'avg': {'t_shelter': 0.317, 't_investigating': 0.206, 'n_sh_co': 22, 'n_co_sh': 22, 'n_co_ch': 12, 'n_ch_co': 11, 'heatmap_entropy': 5.024379947, 'laziness': 0.7955},
+        'std': target_std
+    },
+    '19_def1': {
+        'avg': {'t_shelter': 0.2555, 't_investigating': 0.21, 'n_sh_co': 10, 'n_co_sh': 10, 'n_co_ch': 18, 'n_ch_co': 18, 'heatmap_entropy': 5.211984137, 'laziness': 0.755},
+        'std': target_std
+    },
+    '19_def3': {
+        'avg': {'t_shelter': 0.5945, 't_investigating': 0.046, 'n_sh_co': 39, 'n_co_sh': 39, 'n_co_ch': 14, 'n_ch_co': 13, 'heatmap_entropy': 4.006918493, 'laziness': 0.824},
+        'std': target_std
+    },
+    '20_def1': {
+        'avg': {'t_shelter': 0.1435, 't_investigating': 0.3655, 'n_sh_co': 12, 'n_co_sh': 12, 'n_co_ch': 13, 'n_ch_co': 13, 'heatmap_entropy': 4.824145152, 'laziness': 0.7645},
+        'std': target_std
+    },
+    '20_def3': {
+        'avg': {'t_shelter': 0.1, 't_investigating': 0.391, 'n_sh_co': 7, 'n_co_sh': 7, 'n_co_ch': 8, 'n_ch_co': 8, 'heatmap_entropy': 4.857023003, 'laziness': 0.755},
+        'std': target_std
+    }
+}
+
 WEIGHTS = {
     't_shelter': 2.0, 
     't_investigating': 2.0, 
@@ -102,7 +169,7 @@ def calculate_raw_loss(trial_metrics, target_name):
         
     return loss
 
-def mine_data():
+def mine_data(skip_no_lazy=False):
     db_files = glob.glob("*.db")
     print(f"Found databases: {db_files}")
     
@@ -123,24 +190,30 @@ def mine_data():
                     if trial.state != optuna.trial.TrialState.COMPLETE:
                         continue
                     
+                    # 1. Check for laziness if skip_no_lazy is True
+                    metrics = trial.user_attrs
+                    has_laziness = 'laziness' in metrics
+                    
+                    if skip_no_lazy and not has_laziness:
+                        continue
+
                     # Basic Info
                     row = {
                         "source_db": db_path,
                         "trial_id": trial.number,
                     }
                     
-                    # 1. Add Params
+                    # 2. Add Params
                     for p_name, p_val in trial.params.items():
                         row[f"param_{p_name}"] = p_val
                         
-                    # 2. Add Metrics (and check for laziness)
-                    metrics = trial.user_attrs
-                    row['has_laziness'] = 'laziness' in metrics
+                    # 3. Add Metrics info
+                    row['has_laziness'] = has_laziness
                     
                     for m_name, m_val in metrics.items():
                         row[f"metric_{m_name}"] = m_val
                         
-                    # 3. Calculate Loss for EACH Target Profile
+                    # 4. Calculate Loss for EACH Target Profile
                     for profile in TARGETS.keys():
                         loss = calculate_raw_loss(metrics, profile)
                         row[f"LOSS_{profile}"] = loss
@@ -151,9 +224,13 @@ def mine_data():
             print(f"  [!] Error reading {db_path}: {e}")
 
     # Convert to DataFrame
+    if not rows:
+        print("No data found matching the criteria.")
+        return pd.DataFrame()
+
     df = pd.DataFrame(rows)
     
-    # Reorder columns for easier reading (Source -> Loss -> Params -> Metrics)
+    # Reorder columns for easier reading
     cols = ['source_db', 'trial_id'] + \
            [c for c in df.columns if "LOSS_" in c] + \
            ['has_laziness'] + \
@@ -163,9 +240,11 @@ def mine_data():
     df = df[cols]
     
     # Save
-    output_file = "mining_results.csv"
+    output_file = "mining_results_updated.csv"
     df.to_csv(output_file, index=False)
     print(f"\nDone! Saved {len(df)} trials to {output_file}")
+    return df
+
 
 if __name__ == "__main__":
-    mine_data()
+    mine_data(skip_no_lazy=True)

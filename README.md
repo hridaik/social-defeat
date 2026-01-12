@@ -1,6 +1,9 @@
 # 🧠🐭😥 social-defeat
 Active inference modeling of social defeat in mice
 
+I really need to clean up this repo
+Check out *het_fit.ipynb* and *sim.py* for running sims & visualizing, ignore the rest 
+
 ## 🚀 Project Setup
 
 Follow these steps to set up the project and its dependencies on a new machine. This project uses a custom version of `pymdp` included as a submodule.
@@ -46,4 +49,3 @@ pip install -r requirements.txt
 
 You are now ready to run the project\! ✅
 
-Check out *threat_hierarchical_discrete.ipynb* for main content
