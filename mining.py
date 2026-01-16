@@ -3,7 +3,10 @@ import pandas as pd
 import glob
 import os
 
-target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_co_sh': 5.61, 'n_co_ch': 3.56, 'n_ch_co': 3.43, 'entropy': 0.58, 'laziness': 0.035}
+# target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_co_sh': 5.61, 'n_co_ch': 3.56, 'n_ch_co': 3.43, 'entropy': 0.58, 'laziness': 0.035}
+
+# 0.194947581	0.149524265	6.477787793	6.587131859	3.617206612	3.643907412	0.678171382	0.045547246
+target_std = {'t_shelter': 0.19, 't_investigating': 0.15, 'n_sh_co': 6.48, 'n_co_sh': 6.59, 'n_co_ch': 3.62, 'n_ch_co': 3.65, 'entropy': 0.68, 'laziness': 0.0455}
 
 TARGETS = {
     '13_hab3': {
@@ -136,6 +139,54 @@ TARGETS = {
     '20_def3': {
         'avg': {'t_shelter': 0.1, 't_investigating': 0.391, 'n_sh_co': 7, 'n_co_sh': 7, 'n_co_ch': 8, 'n_ch_co': 8, 'heatmap_entropy': 4.857023003, 'laziness': 0.755},
         'std': target_std
+    },
+    '21_def1': {
+        'avg': {'t_shelter': 0.241, 't_investigating': 0.483, 'n_sh_co': 11, 'n_co_sh': 11, 'n_co_ch': 10, 'n_ch_co': 10, 'heatmap_entropy': 4.167765163, 'laziness': 0.8145},
+        'std': target_std
+    },
+    '21_def3': {
+        'avg': {'t_shelter': 0.135, 't_investigating': 0.434, 'n_sh_co': 12, 'n_co_sh': 12, 'n_co_ch': 11, 'n_ch_co': 10, 'heatmap_entropy': 4.72916643, 'laziness': 0.7305},
+        'std': target_std
+    },
+    '22_def1': {
+        'avg': {'t_shelter': 0.2155, 't_investigating': 0.139, 'n_sh_co': 12, 'n_co_sh': 13, 'n_co_ch': 15, 'n_ch_co': 15, 'heatmap_entropy': 5.05205629, 'laziness': 0.7885},
+        'std': target_std
+    },
+    '22_def3': {
+        'avg': {'t_shelter': 0.142, 't_investigating': 0.2575, 'n_sh_co': 13, 'n_co_sh': 13, 'n_co_ch': 10, 'n_ch_co': 10, 'heatmap_entropy': 5.006154148, 'laziness': 0.79223},
+        'std': target_std
+    },
+    '23_def1': {
+        'avg': {'t_shelter': 0.1945, 't_investigating': 0.3365, 'n_sh_co': 12, 'n_co_sh': 12, 'n_co_ch': 12, 'n_ch_co': 12, 'heatmap_entropy': 4.903375069, 'laziness': 0.78623},
+        'std': target_std
+    },
+    '23_def3': {
+        'avg': {'t_shelter': 0.3255, 't_investigating': 0.3865, 'n_sh_co': 18, 'n_co_sh': 17, 'n_co_ch': 13, 'n_ch_co': 12, 'heatmap_entropy': 4.532798358, 'laziness': 0.839524},
+        'std': target_std
+    },
+    '24_def1': {
+        'avg': {'t_shelter': 0.09, 't_investigating': 0.559, 'n_sh_co': 10, 'n_co_sh': 9, 'n_co_ch': 7, 'n_ch_co': 6, 'heatmap_entropy': 3.979085758, 'laziness': 0.833524},
+        'std': target_std
+    },
+    '24_def3': {
+        'avg': {'t_shelter': 0.6385, 't_investigating': 0.1175, 'n_sh_co': 22, 'n_co_sh': 22, 'n_co_ch': 9, 'n_ch_co': 9, 'heatmap_entropy': 4.007712686, 'laziness': 0.83925},
+        'std': target_std
+    },
+    '25_def1': {
+        'avg': {'t_shelter': 0.127, 't_investigating': 0.5135, 'n_sh_co': 5, 'n_co_sh': 4, 'n_co_ch': 5, 'n_ch_co': 4, 'heatmap_entropy': 4.585052569, 'laziness': 0.860525},
+        'std': target_std
+    },
+    '25_def3': {
+        'avg': {'t_shelter': 0.127, 't_investigating': 0.517, 'n_sh_co': 4, 'n_co_sh': 4, 'n_co_ch': 6, 'n_ch_co': 5, 'heatmap_entropy': 4.527635349, 'laziness': 0.8326},
+        'std': target_std
+    },
+    '26_def1': {
+        'avg': {'t_shelter': 0.291, 't_investigating': 0.3945, 'n_sh_co': 14, 'n_co_sh': 15, 'n_co_ch': 7, 'n_ch_co': 7, 'heatmap_entropy': 4.48366893, 'laziness': 0.82526},
+        'std': target_std
+    },
+    '26_def3': {
+        'avg': {'t_shelter': 0.824, 't_investigating': 0.057, 'n_sh_co': 15, 'n_co_sh': 15, 'n_co_ch': 2, 'n_ch_co': 2, 'heatmap_entropy': 2.535852912, 'laziness': 0.9355},
+        'std': target_std
     }
 }
 
@@ -240,7 +291,7 @@ def mine_data(skip_no_lazy=False):
     df = df[cols]
     
     # Save
-    output_file = "mining_results_updated.csv"
+    output_file = "mining_results_adj.csv"
     df.to_csv(output_file, index=False)
     print(f"\nDone! Saved {len(df)} trials to {output_file}")
     return df
