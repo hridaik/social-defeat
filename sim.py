@@ -218,15 +218,15 @@ if __name__ == "__main__":
     
     start_time = time.time()
     history = run_sim(
-        gif_path=None,
+        gif_path=GIF_PATH,
         pkl_path=LOG_PATH,
-        max_steps=250,
+        max_steps=2000,
         sensory_imprecision=0.5,
         printing=True,
-        epistemic_drive=3.0,
-        k_shelter=0,
-        k_threat=0,
-        delta_stay=0
+        epistemic_drive=1.0,
+        k_shelter=2.0,
+        k_threat=1.0,
+        delta_stay=0.3
     )
 
     trajectory = pd.DataFrame({
