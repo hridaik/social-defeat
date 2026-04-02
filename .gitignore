@@ -1,8 +1,9 @@
-# Run logs
+# Run logs, old code files
 runs/
 dlc/
 log*.txt
 *.log
+deprecated/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

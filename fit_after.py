@@ -172,7 +172,7 @@ sus_pre_params = {
         "sensory_prec_slope": 0.63,
         "k_shelter": 0.57,
         "k_threat": 0.84,
-        "delta_stay": 1.41
+        "delta_stay": 1.41  
         }
 
 
