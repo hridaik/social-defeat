@@ -24,8 +24,8 @@ nice -n 10 python fit_reduced.py --mouse puc --model noD > log_noD_2.txt 2>&1 &
 nice -n 10 python fit_reduced.py --mouse puc --model noD > log_noD_3.txt 2>&1 &
 
 # Only M Model (2 Workers)
-nice -n 10 python fit_reduced.py --mouse puc --model M > log_M_1.txt 2>&1 &
-nice -n 10 python fit_reduced.py --mouse puc --model M > log_M_2.txt 2>&1 &
+nice -n 10 python fit_reduced.py --mouse puc --model M_only > log_M_1.txt 2>&1 &
+nice -n 10 python fit_reduced.py --mouse puc --model M_only > log_M_2.txt 2>&1 &
 
 echo "All workers launched in the background!"
 wait
