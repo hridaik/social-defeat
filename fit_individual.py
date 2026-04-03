@@ -143,34 +143,35 @@ WEIGHTS = {
 
 metric_names = ['t_shelter', 't_investigating', 'n_sh_co', 'n_co_sh', 'n_co_ch', 'n_ch_co', 'entropy', 'laziness']
 # target_avg = {'t_shelter': 0.4475, 't_investigating': 0.149, 'n_sh_co': 14, 'n_co_sh': 14, 'n_co_ch': 10, 'n_ch_co': 9, 'entropy': 4.25, 'laziness': 0.825}
-target_std = {'t_shelter': 0.145, 't_investigating': 0.08, 'n_sh_co': 5.68, 'n_co_sh': 5.61, 'n_co_ch': 3.56, 'n_ch_co': 3.43, 'entropy': 0.58, 'laziness': 0.035}
+# zero-centered std vals 0.194947581	0.149524265	6.477787793	6.587131859	3.617206612	3.643907412	0.678171382	0.045547246
+target_std = {'t_shelter': 0.195, 't_investigating': 0.15, 'n_sh_co': 6.48, 'n_co_sh': 6.59, 'n_co_ch': 3.62, 'n_ch_co': 3.64, 'entropy': 0.68, 'laziness': 0.045}
 
 
-# HAB 3 only
+# Representative mice - scared, avg, curious
 REAL_MOUSE_DATA = {
-    "Resilient": {
-        # 0.562	0.044	18	18	12	12	3.909343409	0.856
-        "avg": {'t_shelter': 0.562, 't_investigating': 0.044, 'n_sh_co': 18, 'n_co_sh': 18, 'n_co_ch': 12, 'n_ch_co': 12, 'entropy': 3.91, 'laziness': 0.856},
+    "puc": {
+        # 26-post 0.824	0.057	15	15	2	2	2.535852912	0.9355
+        "avg": {'t_shelter': 0.824, 't_investigating': 0.057, 'n_sh_co': 15, 'n_co_sh': 15, 'n_co_ch': 2, 'n_ch_co': 2, 'entropy': 2.54, 'laziness': 0.94},
         "std": target_std
     },
-    "Susceptible": {
-        # 0.3815	0.23575	13.5	13.5	8	7.5	4.138084203	0.85075
-        "avg": {'t_shelter': 0.3815, 't_investigating': 0.23575, 'n_sh_co': 13.5, 'n_co_sh': 13.5, 'n_co_ch': 8, 'n_ch_co': 7.5, 'entropy': 4.14, 'laziness': 0.851},
+    "avg": {
+        # 14-post 0.3215	0.2595	11	11	12	12	4.166432251	0.826
+        "avg": {'t_shelter': 0.3215, 't_investigating': 0.256, 'n_sh_co': 11, 'n_co_sh': 11, 'n_co_ch': 12, 'n_ch_co': 12, 'entropy': 4.166, 'laziness': 0.826},
         "std": target_std
     },
-    "Control": {
-        # 0.44675	0.166875	15.3	15.5	9.75	9.5	4.431234174	0.803
-        "avg": {'t_shelter': 0.447, 't_investigating': 0.167, 'n_sh_co': 15.3, 'n_co_sh': 15.5, 'n_co_ch': 9.75, 'n_ch_co': 9.5, 'entropy': 4.43, 'laziness': 0.803},
+    "chd": {
+        #24-pre 0.09	0.559	10	9	7	6	3.979085758	0.8335
+        "avg": {'t_shelter': 0.09, 't_investigating': 0.56, 'n_sh_co': 10, 'n_co_sh': 9, 'n_co_ch': 7, 'n_ch_co': 6, 'entropy': 3.98, 'laziness': 0.834},
         "std": target_std
     }
 }
 
 def objective(trial, target_avg, target_std, output_dir):
-    id_threshold = trial.suggest_float("id_threshold", 0.1, 0.4)       
-    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.01, 0.2) 
-    k_shelter = trial.suggest_float("k_shelter", 1.5, 5.0)
-    k_threat = trial.suggest_float("k_threat", 0.1, 0.6)
-    delta_stay = trial.suggest_float("delta_stay", 1.5, 6.0)
+    id_threshold = trial.suggest_float("id_threshold", 0.05, 0.95)       
+    sensory_prec_slope = trial.suggest_float("sensory_prec_slope", 0.01, 1.0) 
+    k_shelter = trial.suggest_float("k_shelter", 0.1, 5.0)
+    k_threat = trial.suggest_float("k_threat", 0.1, 5.0)
+    delta_stay = trial.suggest_float("delta_stay", 1.5, 8.0)
 
     n_sims = 1
     
