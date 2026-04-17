@@ -90,8 +90,8 @@ INACTIVE_PARAM_DEFAULTS = {
 PARAM_BOUNDS = {
     "id_threshold":      (0.05, 0.95),
     "sensory_prec_slope": (0.01, 1.0),
-    "k_shelter":         (0.1, 5.0),
-    "k_threat":          (0.1, 5.0),
+    "k_shelter":         (-6.0, 6.0),
+    "k_threat":          (-3.0, 3.0),
     "delta_stay":        (1.5, 8.0),
 }
 
@@ -99,11 +99,11 @@ PARAM_BOUNDS = {
 # Reduced models start without a seed so Phase 1 is unbiased.
 # 0.134363192	5.178042798	1.382055521	2.284639358	0
 FULL_MODEL_SEED = {
-    "id_threshold": 0.134,
-    "sensory_prec_slope": 0.08,
-    "k_shelter": 5.18,
-    "k_threat": 1.38,
-    "delta_stay": 2.28,
+    "id_threshold": 0.5,
+    "sensory_prec_slope": 0.5,
+    "k_shelter": 0.0,
+    "k_threat": 0.0,
+    "delta_stay": 3.0,
 }
 
 
@@ -113,14 +113,15 @@ FULL_MODEL_SEED = {
 # Scaled down proportionally for reduced models, with a floor of 20.
 # Split 20% exploratory (random) / 80% TPE.
 # ---------------------------------------------------------------------------
-BASE_TRIALS = 50
+BASE_TRIALS = 100
 FULL_MODEL_N_PARAMS = MODEL_REGISTRY["full"]["n_params"]
-PHASE1_FRAC = 0.20
+PHASE1_FRAC = 0.0
 
 
 def compute_budget(n_params: int) -> tuple[int, int]:
     """Return (phase1_trials, phase2_trials) for a model with n_params active params."""
-    total = max(20, int(BASE_TRIALS * (n_params / FULL_MODEL_N_PARAMS)))
+    # total = max(20, int(BASE_TRIALS * (n_params / FULL_MODEL_N_PARAMS)))
+    total = max(20, int(BASE_TRIALS))
     phase1 = max(5, int(total * PHASE1_FRAC))
     phase2 = total - phase1
     return phase1, phase2
