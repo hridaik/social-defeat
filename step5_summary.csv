@@ -1,0 +1,5 @@
+phase,subset,model_mean_abs,model_median_abs,baseline_mean_abs,baseline_median_abs
+def1,all_metrics,0.8746,0.7354,0.6378,0.5414
+def1,primary_only,0.884,0.6603,0.7394,0.6021
+def3,all_metrics,0.7967,0.5525,0.4345,0.2962
+def3,primary_only,0.8579,0.5974,0.6333,0.5154

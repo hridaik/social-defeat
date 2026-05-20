@@ -4,6 +4,7 @@ dlc/
 log*.txt
 *.log
 deprecated/
+visualization/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

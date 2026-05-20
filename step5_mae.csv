@@ -1,0 +1,17 @@
+phase,metric,model_median_abs_err,baseline_median_abs_err,comparison
+def1,t_shelter,0.4564,0.6308,better
+def1,t_investigating,0.7067,0.5733,worse
+def1,n_sh_co,0.6173,0.463,worse
+def1,n_co_sh,0.4552,0.3035,worse
+def1,n_co_ch,0.8287,0.5525,worse
+def1,n_ch_co,0.8242,0.5495,worse
+def1,heatmap_entropy,0.3759,0.512,better
+def1,laziness,1.2444,0.5556,worse
+def3,t_shelter,0.5744,0.5795,similar
+def3,t_investigating,0.9733,0.46,worse
+def3,n_sh_co,0.7716,0.3086,worse
+def3,n_co_sh,0.7587,0.1517,worse
+def3,n_co_ch,0.2762,0.2762,similar
+def3,n_ch_co,0.2747,0.2747,similar
+def3,heatmap_entropy,1.1845,0.3655,worse
+def3,laziness,0.5333,0.2889,worse

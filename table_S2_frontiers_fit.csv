@@ -1,0 +1,18 @@
+Mouse ID,Group,Phase,Fit Error (σ)
+n1,Defeat,Pre-defeat,0.57
+n1,Defeat,Post-defeat,1.28
+n2,Defeat,Pre-defeat,0.29
+n2,Defeat,Post-defeat,0.29
+n3,Defeat,Pre-defeat,0.76
+n3,Defeat,Post-defeat,0.59
+n4,Control,Pre-defeat,0.88
+n4,Control,Post-defeat,0.50
+n5,Control,Pre-defeat,0.31
+n5,Control,Post-defeat,0.96
+n6,Control,Pre-defeat,0.36
+n6,Control,Post-defeat,0.36
+Overall median,,,0.53
+Control median,,,0.43
+Defeat median,,,0.58
+Pre-defeat median,,,0.46
+Post-defeat median,,,0.54

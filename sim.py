@@ -214,19 +214,20 @@ if __name__ == "__main__":
     print("Running Simulation in Standalone Mode")
     
     GIF_PATH = "test_run.gif"
-    LOG_PATH = "test_run.pkl"
+    LOG_PATH = "m26_def1_run.pkl"
     
     start_time = time.time()
     history = run_sim(
-        gif_path=GIF_PATH,
+        gif_path=None,
         pkl_path=LOG_PATH,
         max_steps=2000,
-        sensory_imprecision=0.5,
+        sensory_imprecision=0.6,
+        id_threshold=0.19,
         printing=True,
         epistemic_drive=1.0,
-        k_shelter=2.0,
-        k_threat=1.0,
-        delta_stay=0.3
+        k_shelter=4.5,
+        k_threat=1.2,
+        delta_stay=2.78
     )
 
     trajectory = pd.DataFrame({

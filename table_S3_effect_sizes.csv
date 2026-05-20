@@ -1,0 +1,6 @@
+Parameter,Susceptible Mean (SD),Resilient Mean (SD),Cohen's d
+Threat Aversion (k_threat),1.278 (0.095),0.516 (0.092),+8.16
+Motor Inertia (delta_stay),1.908 (0.328),3.967 (1.217),-2.31
+Shelter Preference (k_shelter),5.621 (0.398),3.503 (2.397),+1.23
+Identity Threshold (id_threshold),0.181 (0.042),0.303 (0.149),-1.12
+Sensory Precision (sensory_prec_slope),0.630 (0.000),0.291 (0.291),+0.33

@@ -1,0 +1,4 @@
+Mouse,Post-defeat k_threat,Predicted Label,Empirical Score (Δ),Empirical Label,Correct
+n1,1.477,Susceptible,+0.463,Susceptible,Yes
+n2,1.156,Susceptible,+0.380,Susceptible,Yes
+n3,0.569,Resilient,-0.002,Resilient,Yes

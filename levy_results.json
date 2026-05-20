@@ -1,0 +1,57 @@
+{
+  "model": "LevyWalk",
+  "n_fit_trials": 100,
+  "n_metric_sims": 20,
+  "search_space": {
+    "mu": [1.0, 3.0],
+    "kappa": [0.0, 3.0],
+    "p_stay": [0.0, 0.6]
+  },
+  "mice": {
+    "puc": {
+      "best_loss": 6.0607,
+      "best_params": {"mu": 1.288, "kappa": 2.558, "p_stay": 0.276},
+      "metrics": {
+        "t_shelter":       {"target": 0.824,  "levy_mean": 0.265, "levy_sd": 0.171, "w_zsq": 16.44},
+        "t_investigating": {"target": 0.057,  "levy_mean": 0.223, "levy_sd": 0.124, "w_zsq": 2.44},
+        "n_sh_co":         {"target": 15,     "levy_mean": 2.55,  "levy_sd": 1.20,  "w_zsq": 1.85},
+        "n_co_sh":         {"target": 15,     "levy_mean": 1.95,  "levy_sd": 1.28,  "w_zsq": 1.96},
+        "n_co_ch":         {"target": 2,      "levy_mean": 2.35,  "levy_sd": 1.06,  "w_zsq": 0.01},
+        "n_ch_co":         {"target": 2,      "levy_mean": 1.40,  "levy_sd": 1.07,  "w_zsq": 0.01},
+        "entropy":         {"target": 2.54,   "levy_mean": 3.08,  "levy_sd": 0.38,  "w_zsq": 0.31},
+        "laziness":        {"target": 0.940,  "levy_mean": 0.951, "levy_sd": 0.015, "w_zsq": 0.06}
+      },
+      "total_loss": 23.07
+    },
+    "avg": {
+      "best_loss": 1.2368,
+      "best_params": {"mu": 1.576, "kappa": 1.008, "p_stay": 0.241},
+      "metrics": {
+        "t_shelter":       {"target": 0.3215, "levy_mean": 0.201, "levy_sd": 0.091, "w_zsq": 0.76},
+        "t_investigating": {"target": 0.256,  "levy_mean": 0.237, "levy_sd": 0.066, "w_zsq": 0.03},
+        "n_sh_co":         {"target": 11,     "levy_mean": 9.15,  "levy_sd": 3.07,  "w_zsq": 0.04},
+        "n_co_sh":         {"target": 11,     "levy_mean": 8.45,  "levy_sd": 3.12,  "w_zsq": 0.08},
+        "n_co_ch":         {"target": 12,     "levy_mean": 7.05,  "levy_sd": 1.88,  "w_zsq": 0.94},
+        "n_ch_co":         {"target": 12,     "levy_mean": 6.45,  "levy_sd": 2.06,  "w_zsq": 1.16},
+        "entropy":         {"target": 4.166,  "levy_mean": 4.547, "levy_sd": 0.163, "w_zsq": 0.16},
+        "laziness":        {"target": 0.826,  "levy_mean": 0.813, "levy_sd": 0.021, "w_zsq": 0.09}
+      },
+      "total_loss": 3.25
+    },
+    "chd": {
+      "best_loss": 3.3771,
+      "best_params": {"mu": 1.574, "kappa": 1.400, "p_stay": 0.411},
+      "metrics": {
+        "t_shelter":       {"target": 0.09,   "levy_mean": 0.122, "levy_sd": 0.056, "w_zsq": 0.06},
+        "t_investigating": {"target": 0.560,  "levy_mean": 0.253, "levy_sd": 0.076, "w_zsq": 8.38},
+        "n_sh_co":         {"target": 10,     "levy_mean": 5.25,  "levy_sd": 2.36,  "w_zsq": 0.27},
+        "n_co_sh":         {"target": 9,      "levy_mean": 4.45,  "levy_sd": 2.42,  "w_zsq": 0.24},
+        "n_co_ch":         {"target": 7,      "levy_mean": 5.75,  "levy_sd": 1.95,  "w_zsq": 0.06},
+        "n_ch_co":         {"target": 6,      "levy_mean": 4.95,  "levy_sd": 1.96,  "w_zsq": 0.04},
+        "entropy":         {"target": 3.98,   "levy_mean": 4.33,  "levy_sd": 0.29,  "w_zsq": 0.13},
+        "laziness":        {"target": 0.834,  "levy_mean": 0.863, "levy_sd": 0.019, "w_zsq": 0.42}
+      },
+      "total_loss": 9.59
+    }
+  }
+}
