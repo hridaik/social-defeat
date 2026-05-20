@@ -1,5 +1,0 @@
-phase,group,t_shelter,t_investigating,n_sh_co,n_co_sh,n_co_ch,n_ch_co,heatmap_entropy,laziness
-def1,Control,0.2197,0.2778,9.0,9.0,11.6667,11.3333,4.4288,0.7723
-def1,Defeat,0.2118,0.3507,12.3333,12.0,12.0,11.3333,4.5695,0.7935
-def3,Control,0.146,0.4967,8.6667,9.0,7.3333,7.0,4.302,0.8087
-def3,Defeat,0.3867,0.2453,14.3333,14.0,9.6667,9.6667,4.2497,0.8162

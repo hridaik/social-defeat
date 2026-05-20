@@ -1,9 +1,0 @@
-Metric,Pre-defeat Median |Error| (σ),Post-defeat Median |Error| (σ),Pre-defeat FDR p,Post-defeat FDR p
-Time in Shelter,0.46,0.57,0.622,0.346
-Time Investigating,0.71,0.97,0.145,0.946
-Shelter→Corridor,0.62,0.77,0.035*,0.002*
-Corridor→Shelter,0.46,0.76,0.035*,0.002*
-Corridor→Chamber,0.83,0.28,0.045*,0.946
-Chamber→Corridor,0.82,0.27,0.041*,0.946
-Spatial Entropy,0.38,1.18,0.091,0.012*
-Immobility,1.24,0.53,0.091,0.345
