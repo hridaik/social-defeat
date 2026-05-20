@@ -95,8 +95,7 @@ PARAM_BOUNDS = {
     "delta_stay":        (1.5, 8.0),
 }
 
-# Seed used only for the full model (already well-characterised).
-# Reduced models start without a seed so Phase 1 is unbiased.
+
 # 0.134363192	5.178042798	1.382055521	2.284639358	0
 FULL_MODEL_SEED = {
     "id_threshold": 0.5,
@@ -106,6 +105,14 @@ FULL_MODEL_SEED = {
     "delta_stay": 3.0,
 }
 
+# FULL_MODEL_SEED = { # puc
+#     "id_threshold": 0.064,
+#     "sensory_prec_slope": 0.63,
+#     "k_shelter": 6.563,
+#     "k_threat": 1.215,
+#     "delta_stay": 1.855,
+# }
+
 
 # ---------------------------------------------------------------------------
 # Trial budget
@@ -113,7 +120,7 @@ FULL_MODEL_SEED = {
 # Scaled down proportionally for reduced models, with a floor of 20.
 # Split 20% exploratory (random) / 80% TPE.
 # ---------------------------------------------------------------------------
-BASE_TRIALS = 100
+BASE_TRIALS = 50
 FULL_MODEL_N_PARAMS = MODEL_REGISTRY["full"]["n_params"]
 PHASE1_FRAC = 0.0
 
@@ -306,8 +313,9 @@ def run_two_phase(study, objective_fn, phase1_trials: int, phase2_trials: int,
     random_sampler = optuna.samplers.RandomSampler(seed=42)
     study.sampler = random_sampler
 
-    # Enqueue known-good seed only for the full model
-    if seed_params is not None and model == "full" and len(study.trials) == 0:
+    # Enqueue seed 
+    # if seed_params is not None and model == "full" and len(study.trials) == 0:
+    if seed_params is not None and len(study.trials) == 0:
         # Only enqueue the subset of params that are active; Optuna ignores extras
         active_seed = {k: v for k, v in seed_params.items() if k in active_params}
         study.enqueue_trial(active_seed)
